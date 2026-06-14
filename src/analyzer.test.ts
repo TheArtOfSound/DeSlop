@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { analyzeFiles } from "./analyzer";
+
+test("flags visible placeholders and fake wiring language", () => {
+  const report = analyzeFiles([
+    {
+      path: "README.md",
+      content: "In production this would connect to a real database for John Doe."
+    }
+  ]);
+
+  assert.equal(report.summary.filesScanned, 1);
+  assert.equal(report.summary.high, 2);
+  assert.equal(report.findings[0]?.severity, "high");
+});
+
+test("keeps concrete product wording clean", () => {
+  const report = analyzeFiles([
+    {
+      path: "README.md",
+      content: "Customers book pickups. Workers complete stops. Admins verify proof before payout."
+    }
+  ]);
+
+  assert.equal(report.summary.findingsTotal, 0);
+  assert.equal(report.summary.score, 100);
+});
+
+test("reports line and column for matched wording", () => {
+  const report = analyzeFiles([
+    {
+      path: "app.tsx",
+      content: "const copy = 'ok';\nconst error = 'Something went wrong';"
+    }
+  ]);
+
+  assert.equal(report.findings.length, 1);
+  assert.equal(report.findings[0]?.line, 2);
+  assert.equal(report.findings[0]?.column, 16);
+});
