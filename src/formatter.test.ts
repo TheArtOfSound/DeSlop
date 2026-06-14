@@ -5,6 +5,7 @@ import type { AuditReport } from "./types";
 
 test("formats exact match evidence in text reports", () => {
   const report: AuditReport = {
+    schemaVersion: 1,
     summary: {
       score: 96,
       filesScanned: 1,
