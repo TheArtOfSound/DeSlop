@@ -51,9 +51,19 @@ Fail when the score is below a threshold:
 npm run audit -- . --min-score 90
 ```
 
+Limit the largest file DeSlop will read:
+
+```bash
+npm run audit -- . --max-file-bytes 250000
+```
+
 ## JSON output
 
 JSON reports include `schemaVersion: 1`, summary counts, category counts, and exact finding evidence: file, line, column, matched text, reason, and fix direction.
+
+## Scan limits
+
+By default, DeSlop skips supported files larger than 1,000,000 bytes. Use `--max-file-bytes` to lower or raise that limit for CI and large repos.
 
 ## Development checks
 
