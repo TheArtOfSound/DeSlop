@@ -1,0 +1,22 @@
+{
+  "name": "deslop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Repo scanner for vague product copy, placeholder code, and fake-complete AI app residue.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "npm run build && node --test \"dist/**/*.test.js\"",
+    "audit": "npm run build && node dist/cli.js"
+  },
+  "bin": {
+    "deslop": "dist/cli.js"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
