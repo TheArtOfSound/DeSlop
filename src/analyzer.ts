@@ -2,6 +2,7 @@ import { slopRules } from "./slopRules";
 import type { AuditReport, AuditSummary, FileInput, Finding, Severity } from "./types";
 
 const ignoreFileMarker = "deslop:ignore-file";
+const ignoreLineMarker = "deslop:ignore-line";
 
 const severityWeight: Record<Severity, number> = {
   high: 8,
@@ -24,6 +25,9 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
 
       for (const match of file.content.matchAll(rule.pattern)) {
         if (match.index === undefined) continue;
+        const excerpt = getLine(file.content, match.index).trim();
+        if (excerpt.includes(ignoreLineMarker)) continue;
+
         const location = getLocation(lineStarts, match.index);
         findings.push({
           ruleId: rule.id,
@@ -32,7 +36,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
           filePath: file.path,
           line: location.line,
           column: location.column,
-          excerpt: getLine(file.content, match.index).trim(),
+          excerpt,
           reason: rule.reason,
           replacementHint: rule.replacementHint
         });
