@@ -127,7 +127,8 @@ function printReport(report: AuditReport): void {
   for (const finding of report.findings) {
     process.stdout.write(`[${finding.severity.toUpperCase()}] ${finding.label}\n`);
     process.stdout.write(`${finding.filePath}:${finding.line}:${finding.column}\n`);
-    process.stdout.write(`  ${finding.excerpt}\n`);
+    process.stdout.write(`  Match: ${finding.matchedText}\n`);
+    process.stdout.write(`  Line: ${finding.excerpt}\n`);
     process.stdout.write(`  Why it matters: ${finding.reason}\n`);
     process.stdout.write(`  Fix direction: ${finding.replacementHint}\n\n`);
   }
