@@ -5,8 +5,11 @@ import type { FileInput } from "./types";
 const ignoredDirNames = new Set([".git", "node_modules", "dist", "build", "coverage", ".next", ".turbo", ".cache"]);
 const scannedExtensions = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".jsx", ".json", ".html", ".css"]);
 
+export const defaultMaxFileBytes = 1_000_000;
+
 export type CollectFilesOptions = {
   reportRoot?: string;
+  maxFileBytes?: number;
 };
 
 export async function collectFiles(root: string, options: CollectFilesOptions = {}): Promise<FileInput[]> {
@@ -14,6 +17,7 @@ export async function collectFiles(root: string, options: CollectFilesOptions = 
 
   if (stats.isFile()) {
     if (!shouldScanFile(root)) return [];
+    if (!shouldReadFile(stats.size, options.maxFileBytes)) return [];
     return [{ path: toReportPath(root, options.reportRoot), content: await fs.readFile(root, "utf8") }];
   }
 
@@ -32,6 +36,8 @@ export async function collectFiles(root: string, options: CollectFilesOptions = 
     }
 
     if (entry.isFile() && shouldScanFile(fullPath)) {
+      const fileStats = await fs.stat(fullPath);
+      if (!shouldReadFile(fileStats.size, options.maxFileBytes)) continue;
       files.push({ path: toReportPath(fullPath, options.reportRoot), content: await fs.readFile(fullPath, "utf8") });
     }
   }
@@ -45,6 +51,10 @@ export function shouldIgnoreDirectory(name: string): boolean {
 
 export function shouldScanFile(filePath: string): boolean {
   return scannedExtensions.has(path.extname(filePath).toLowerCase());
+}
+
+export function shouldReadFile(sizeBytes: number, maxFileBytes: number | undefined): boolean {
+  return sizeBytes <= (maxFileBytes ?? defaultMaxFileBytes);
 }
 
 export function toReportPath(filePath: string, reportRoot: string | undefined): string {
