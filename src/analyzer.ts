@@ -64,6 +64,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
   });
 
   return {
+    schemaVersion: 1,
     summary: summarize(filesScanned, findings),
     findings
   };
