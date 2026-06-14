@@ -46,6 +46,18 @@ test("flags fake-complete code residue", () => {
   assert.equal(report.summary.low, 1);
 });
 
+test("deduplicates overlapping matches from the same rule on one line", () => {
+  const report = analyzeFiles([
+    {
+      path: "README.md",
+      content: "In production this would connect to a real database."
+    }
+  ]);
+
+  assert.equal(report.summary.high, 1);
+  assert.equal(report.findings.length, 1);
+});
+
 test("honors the file-level ignore marker", () => {
   const report = analyzeFiles([
     {
