@@ -5,8 +5,9 @@
   "description": "Repo scanner for vague product copy, placeholder code, and fake-complete AI app residue.",
   "license": "UNLICENSED",
   "scripts": {
+    "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.json",
-    "check": "npm run build && node --test \"dist/**/*.test.js\"",
+    "check": "npm run clean && npm run build && node --test \"dist/**/*.test.js\"",
     "audit": "npm run build && node dist/cli.js"
   },
   "bin": {
