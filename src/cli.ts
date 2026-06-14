@@ -20,7 +20,10 @@ async function main(): Promise<void> {
   const files: FileInput[] = [];
 
   for (const root of roots) {
-    files.push(...await collectFiles(path.resolve(root), { reportRoot: process.cwd() }));
+    files.push(...await collectFiles(path.resolve(root), {
+      reportRoot: process.cwd(),
+      maxFileBytes: options.maxFileBytes ?? undefined
+    }));
   }
 
   const report = analyzeFiles(files);
@@ -47,10 +50,11 @@ main().catch((error: unknown) => {
 });
 
 function printHelp(): void {
-  process.stdout.write(`Usage: deslop [paths...] [--json] [--fail-on high|medium|low] [--min-score 90]\n\n`);
+  process.stdout.write(`Usage: deslop [paths...] [--json] [--fail-on high|medium|low] [--min-score 90] [--max-file-bytes 1000000]\n\n`);
   process.stdout.write(`Examples:\n`);
   process.stdout.write(`  npm run audit -- .\n`);
   process.stdout.write(`  npm run audit -- README.md --fail-on high\n`);
   process.stdout.write(`  npm run audit -- . --json\n`);
   process.stdout.write(`  npm run audit -- . --min-score 90\n`);
+  process.stdout.write(`  npm run audit -- . --max-file-bytes 250000\n`);
 }
