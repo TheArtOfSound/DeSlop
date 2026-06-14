@@ -1,8 +1,10 @@
 import { slopRules } from "./slopRules";
-import type { AuditReport, AuditSummary, FileInput, Finding, Severity } from "./types";
+import type { AuditReport, AuditSummary, CategoryCounts, FileInput, Finding, RuleCategory, Severity } from "./types";
 
 const ignoreFileMarker = "deslop:ignore-file";
 const ignoreLineMarker = "deslop:ignore-line";
+
+const categories: RuleCategory[] = ["copy", "ux", "implementation", "security", "release-hygiene"];
 
 const severityWeight: Record<Severity, number> = {
   high: 8,
@@ -39,6 +41,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
           ruleId: rule.id,
           label: rule.label,
           severity: rule.severity,
+          category: rule.category,
           filePath: file.path,
           line: location.line,
           column: location.column,
@@ -55,6 +58,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
   findings.sort((a, b) => {
     const severityDelta = severityWeight[b.severity] - severityWeight[a.severity];
     if (severityDelta !== 0) return severityDelta;
+    if (a.category !== b.category) return a.category.localeCompare(b.category);
     if (a.filePath !== b.filePath) return a.filePath.localeCompare(b.filePath);
     return a.line - b.line || a.column - b.column;
   });
@@ -70,6 +74,11 @@ function summarize(filesScanned: number, findings: Finding[]): AuditSummary {
   const medium = findings.filter((finding) => finding.severity === "medium").length;
   const low = findings.filter((finding) => finding.severity === "low").length;
   const penalty = high * severityWeight.high + medium * severityWeight.medium + low * severityWeight.low;
+  const byCategory = emptyCategoryCounts();
+
+  for (const finding of findings) {
+    byCategory[finding.category] += 1;
+  }
 
   return {
     score: Math.max(0, 100 - penalty),
@@ -77,8 +86,22 @@ function summarize(filesScanned: number, findings: Finding[]): AuditSummary {
     findingsTotal: findings.length,
     high,
     medium,
-    low
+    low,
+    byCategory
   };
+}
+
+function emptyCategoryCounts(): CategoryCounts {
+  return categories.reduce<CategoryCounts>((counts, category) => {
+    counts[category] = 0;
+    return counts;
+  }, {
+    copy: 0,
+    ux: 0,
+    implementation: 0,
+    security: 0,
+    "release-hygiene": 0
+  });
 }
 
 function getLineStarts(content: string): number[] {
