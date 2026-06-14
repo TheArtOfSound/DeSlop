@@ -13,6 +13,8 @@ test("flags visible placeholders and fake wiring language", () => {
 
   assert.equal(report.summary.filesScanned, 1);
   assert.equal(report.summary.high, 2);
+  assert.equal(report.summary.byCategory.implementation, 1);
+  assert.equal(report.summary.byCategory["release-hygiene"], 1);
   assert.equal(report.findings[0]?.severity, "high");
 });
 
@@ -44,6 +46,8 @@ test("flags fake-complete code residue", () => {
   assert.equal(report.summary.high, 2);
   assert.equal(report.summary.medium, 1);
   assert.equal(report.summary.low, 1);
+  assert.equal(report.summary.byCategory.implementation, 3);
+  assert.equal(report.summary.byCategory["release-hygiene"], 1);
 });
 
 test("deduplicates overlapping matches from the same rule on one line", () => {
@@ -79,6 +83,7 @@ test("reports exact match location", () => {
   ]);
 
   assert.equal(report.findings.length, 1);
+  assert.equal(report.findings[0]?.category, "ux");
   assert.equal(report.findings[0]?.line, 2);
   assert.equal(report.findings[0]?.column, 16);
   assert.equal(report.findings[0]?.endColumn, 36);
