@@ -11,13 +11,21 @@ test("formats exact match evidence in text reports", () => {
       findingsTotal: 1,
       high: 0,
       medium: 1,
-      low: 0
+      low: 0,
+      byCategory: {
+        copy: 0,
+        ux: 0,
+        implementation: 1,
+        security: 0,
+        "release-hygiene": 0
+      }
     },
     findings: [
       {
         ruleId: "example-rule",
         label: "Example rule",
         severity: "medium",
+        category: "implementation",
         filePath: "landing.md",
         line: 1,
         column: 1,
