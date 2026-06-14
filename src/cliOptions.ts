@@ -6,6 +6,7 @@ export type CliOptions = {
   help: boolean;
   failOn: Severity | null;
   minScore: number | null;
+  maxFileBytes: number | null;
 };
 
 export function parseCliArgs(args: string[]): CliOptions {
@@ -14,7 +15,8 @@ export function parseCliArgs(args: string[]): CliOptions {
     json: false,
     help: false,
     failOn: null,
-    minScore: null
+    minScore: null,
+    maxFileBytes: null
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -39,9 +41,13 @@ export function parseCliArgs(args: string[]): CliOptions {
     }
 
     if (arg === "--min-score") {
-      const value = Number(args[index + 1]);
-      if (!Number.isInteger(value) || value < 0 || value > 100) throw new Error("--min-score must be an integer from 0 to 100");
-      options.minScore = value;
+      options.minScore = parseBoundedInteger(args[index + 1], "--min-score", 0, 100);
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--max-file-bytes") {
+      options.maxFileBytes = parseBoundedInteger(args[index + 1], "--max-file-bytes", 1, Number.MAX_SAFE_INTEGER);
       index += 1;
       continue;
     }
@@ -50,6 +56,14 @@ export function parseCliArgs(args: string[]): CliOptions {
   }
 
   return options;
+}
+
+function parseBoundedInteger(value: string | undefined, flagName: string, min: number, max: number): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+    throw new Error(`${flagName} must be an integer from ${min} to ${max}`);
+  }
+  return parsed;
 }
 
 function isSeverity(value: string | undefined): value is Severity {
