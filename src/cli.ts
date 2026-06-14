@@ -3,6 +3,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { analyzeFiles } from "./analyzer";
+import { shouldExitWithError } from "./exitPolicy";
 import { formatTextReport } from "./formatter";
 import type { FileInput, Severity } from "./types";
 
@@ -32,7 +33,7 @@ async function main(): Promise<void> {
     printReport(report);
   }
 
-  if (options.failOn && shouldFail(report, options.failOn)) {
+  if (shouldExitWithError(report, { failOn: options.failOn, minScore: options.minScore })) {
     process.exitCode = 1;
   }
 }
@@ -42,6 +43,7 @@ type CliOptions = {
   json: boolean;
   help: boolean;
   failOn: Severity | null;
+  minScore: number | null;
 };
 
 function parseArgs(args: string[]): CliOptions {
@@ -49,7 +51,8 @@ function parseArgs(args: string[]): CliOptions {
     paths: [],
     json: false,
     help: false,
-    failOn: null
+    failOn: null,
+    minScore: null
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -69,6 +72,14 @@ function parseArgs(args: string[]): CliOptions {
       const value = args[index + 1];
       if (!isSeverity(value)) throw new Error("--fail-on must be one of: low, medium, high");
       options.failOn = value;
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--min-score") {
+      const value = Number(args[index + 1]);
+      if (!Number.isInteger(value) || value < 0 || value > 100) throw new Error("--min-score must be an integer from 0 to 100");
+      options.minScore = value;
       index += 1;
       continue;
     }
@@ -117,12 +128,6 @@ function printReport(report: ReturnType<typeof analyzeFiles>): void {
   process.stdout.write(formatTextReport(report));
 }
 
-function shouldFail(report: ReturnType<typeof analyzeFiles>, failOn: Severity): boolean {
-  if (failOn === "high") return report.summary.high > 0;
-  if (failOn === "medium") return report.summary.high + report.summary.medium > 0;
-  return report.summary.findingsTotal > 0;
-}
-
 function isSeverity(value: string | undefined): value is Severity {
   return value === "low" || value === "medium" || value === "high";
 }
@@ -134,9 +139,10 @@ main().catch((error: unknown) => {
 });
 
 function printHelp(): void {
-  process.stdout.write(`Usage: deslop [paths...] [--json] [--fail-on high|medium|low]\n\n`);
+  process.stdout.write(`Usage: deslop [paths...] [--json] [--fail-on high|medium|low] [--min-score 90]\n\n`);
   process.stdout.write(`Examples:\n`);
   process.stdout.write(`  npm run audit -- .\n`);
   process.stdout.write(`  npm run audit -- README.md --fail-on high\n`);
   process.stdout.write(`  npm run audit -- . --json\n`);
+  process.stdout.write(`  npm run audit -- . --min-score 90\n`);
 }
