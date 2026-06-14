@@ -3,7 +3,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { analyzeFiles } from "./analyzer";
-import type { AuditReport, FileInput, Severity } from "./types";
+import { formatTextReport } from "./formatter";
+import type { FileInput, Severity } from "./types";
 
 const ignoredDirs = new Set([".git", "node_modules", "dist", "build", "coverage", ".next", ".turbo", ".cache"]);
 const scannedExtensions = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".jsx", ".json", ".html", ".css"]);
@@ -112,29 +113,11 @@ function shouldScanFile(filePath: string): boolean {
   return scannedExtensions.has(path.extname(filePath).toLowerCase());
 }
 
-function printReport(report: AuditReport): void {
-  const { summary } = report;
-  process.stdout.write(`DeSlop wording audit\n`);
-  process.stdout.write(`Score: ${summary.score}/100\n`);
-  process.stdout.write(`Files scanned: ${summary.filesScanned}\n`);
-  process.stdout.write(`Findings: ${summary.findingsTotal} (${summary.high} high, ${summary.medium} medium, ${summary.low} low)\n\n`);
-
-  if (report.findings.length === 0) {
-    process.stdout.write("No wording slop detected by the current rule set.\n");
-    return;
-  }
-
-  for (const finding of report.findings) {
-    process.stdout.write(`[${finding.severity.toUpperCase()}] ${finding.label}\n`);
-    process.stdout.write(`${finding.filePath}:${finding.line}:${finding.column}\n`);
-    process.stdout.write(`  Match: ${finding.matchedText}\n`);
-    process.stdout.write(`  Line: ${finding.excerpt}\n`);
-    process.stdout.write(`  Why it matters: ${finding.reason}\n`);
-    process.stdout.write(`  Fix direction: ${finding.replacementHint}\n\n`);
-  }
+function printReport(report: ReturnType<typeof analyzeFiles>): void {
+  process.stdout.write(formatTextReport(report));
 }
 
-function shouldFail(report: AuditReport, failOn: Severity): boolean {
+function shouldFail(report: ReturnType<typeof analyzeFiles>, failOn: Severity): boolean {
   if (failOn === "high") return report.summary.high > 0;
   if (failOn === "medium") return report.summary.high + report.summary.medium > 0;
   return report.summary.findingsTotal > 0;
