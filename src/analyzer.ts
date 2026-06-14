@@ -29,6 +29,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
         if (excerpt.includes(ignoreLineMarker)) continue;
 
         const location = getLocation(lineStarts, match.index);
+        const matchedText = match[0];
         findings.push({
           ruleId: rule.id,
           label: rule.label,
@@ -36,6 +37,8 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
           filePath: file.path,
           line: location.line,
           column: location.column,
+          endColumn: location.column + matchedText.length,
+          matchedText,
           excerpt,
           reason: rule.reason,
           replacementHint: rule.replacementHint
