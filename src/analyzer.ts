@@ -19,6 +19,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
 
     filesScanned += 1;
     const lineStarts = getLineStarts(file.content);
+    const seenRuleLines = new Set<string>();
 
     for (const rule of slopRules) {
       rule.pattern.lastIndex = 0;
@@ -29,6 +30,10 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
         if (excerpt.includes(ignoreLineMarker)) continue;
 
         const location = getLocation(lineStarts, match.index);
+        const seenKey = `${rule.id}:${location.line}`;
+        if (seenRuleLines.has(seenKey)) continue;
+        seenRuleLines.add(seenKey);
+
         const matchedText = match[0];
         findings.push({
           ruleId: rule.id,
