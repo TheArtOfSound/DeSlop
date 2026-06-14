@@ -1,0 +1,98 @@
+import { slopRules } from "./slopRules";
+import type { AuditReport, AuditSummary, FileInput, Finding, Severity } from "./types";
+
+const severityWeight: Record<Severity, number> = {
+  high: 8,
+  medium: 4,
+  low: 1
+};
+
+export function analyzeFiles(files: FileInput[]): AuditReport {
+  const findings: Finding[] = [];
+
+  for (const file of files) {
+    const lineStarts = getLineStarts(file.content);
+
+    for (const rule of slopRules) {
+      rule.pattern.lastIndex = 0;
+
+      for (const match of file.content.matchAll(rule.pattern)) {
+        if (match.index === undefined) continue;
+        const location = getLocation(lineStarts, match.index);
+        findings.push({
+          ruleId: rule.id,
+          label: rule.label,
+          severity: rule.severity,
+          filePath: file.path,
+          line: location.line,
+          column: location.column,
+          excerpt: getLine(file.content, match.index).trim(),
+          reason: rule.reason,
+          replacementHint: rule.replacementHint
+        });
+      }
+    }
+  }
+
+  findings.sort((a, b) => {
+    const severityDelta = severityWeight[b.severity] - severityWeight[a.severity];
+    if (severityDelta !== 0) return severityDelta;
+    if (a.filePath !== b.filePath) return a.filePath.localeCompare(b.filePath);
+    return a.line - b.line || a.column - b.column;
+  });
+
+  return {
+    summary: summarize(files.length, findings),
+    findings
+  };
+}
+
+function summarize(filesScanned: number, findings: Finding[]): AuditSummary {
+  const high = findings.filter((finding) => finding.severity === "high").length;
+  const medium = findings.filter((finding) => finding.severity === "medium").length;
+  const low = findings.filter((finding) => finding.severity === "low").length;
+  const penalty = high * severityWeight.high + medium * severityWeight.medium + low * severityWeight.low;
+
+  return {
+    score: Math.max(0, 100 - penalty),
+    filesScanned,
+    findingsTotal: findings.length,
+    high,
+    medium,
+    low
+  };
+}
+
+function getLineStarts(content: string): number[] {
+  const starts = [0];
+  for (let index = 0; index < content.length; index += 1) {
+    if (content[index] === "\n") starts.push(index + 1);
+  }
+  return starts;
+}
+
+function getLocation(lineStarts: number[], index: number): { line: number; column: number } {
+  let low = 0;
+  let high = lineStarts.length - 1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const current = lineStarts[mid];
+    const next = lineStarts[mid + 1] ?? Number.POSITIVE_INFINITY;
+
+    if (index >= current && index < next) {
+      return { line: mid + 1, column: index - current + 1 };
+    }
+
+    if (index < current) high = mid - 1;
+    else low = mid + 1;
+  }
+
+  return { line: 1, column: index + 1 };
+}
+
+function getLine(content: string, index: number): string {
+  const start = content.lastIndexOf("\n", index) + 1;
+  const end = content.indexOf("\n", index);
+  return content.slice(start, end === -1 ? content.length : end);
+}
