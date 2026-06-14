@@ -28,6 +28,24 @@ test("keeps concrete product wording clean", () => {
   assert.equal(report.summary.score, 100);
 });
 
+test("flags fake-complete code residue", () => {
+  const report = analyzeFiles([
+    {
+      path: "src/BillingLink.tsx",
+      content: [
+        "setTimeout(() => setSuccess(true), 1000);",
+        "<a href=\"#\">Billing</a>",
+        "throw new Error(\"stub\");",
+        "console.log(result);"
+      ].join("\n")
+    }
+  ]);
+
+  assert.equal(report.summary.high, 2);
+  assert.equal(report.summary.medium, 1);
+  assert.equal(report.summary.low, 1);
+});
+
 test("honors the file-level ignore marker", () => {
   const report = analyzeFiles([
     {
