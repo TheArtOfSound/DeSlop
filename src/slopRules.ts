@@ -61,6 +61,46 @@ const baseRules = [
     replacementHint: "Say what failed, why it matters, and what the user can do next."
   },
   {
+    id: "fake-api-delay",
+    label: "Fake API delay",
+    severity: "high",
+    pattern: /\bsetTimeout\s*\([^\n]*(setLoading|setSuccess|resolve|mock|simulate|fake)/gi,
+    reason: "Artificial delays often hide that the feature is not wired to a real operation.",
+    replacementHint: "Replace the delay with the real async boundary or move demo behavior into an explicit fixture."
+  },
+  {
+    id: "unimplemented-branch",
+    label: "Unimplemented branch",
+    severity: "high",
+    pattern: /\bthrow new Error\s*\(\s*["'`](not implemented|todo|coming soon|stub)["'`]\s*\)/gi,
+    reason: "The code can reach a branch that admits the product is unfinished.",
+    replacementHint: "Implement the branch, remove the route, or fail earlier with a precise user-facing constraint."
+  },
+  {
+    id: "client-only-auth-storage",
+    label: "Client-only auth storage",
+    severity: "high",
+    pattern: /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`](token|auth|jwt|session|user|role)["'`]/gi,
+    reason: "Auth state stored only in browser storage is easy to spoof and usually means permissions are not enforced server-side.",
+    replacementHint: "Move permission enforcement to the server and treat browser state as display-only."
+  },
+  {
+    id: "dead-navigation-target",
+    label: "Dead navigation target",
+    severity: "medium",
+    pattern: /\b(href|to)=\{?["'`](#|javascript:void\(0\)|todo|coming-soon)["'`]\}?/gi,
+    reason: "A visible navigation element points nowhere, which is a direct fake-completeness signal.",
+    replacementHint: "Remove the control, wire the destination, or show a disabled state with a concrete reason."
+  },
+  {
+    id: "debug-log-leftover",
+    label: "Debug log leftover",
+    severity: "low",
+    pattern: /\bconsole\.(log|debug|trace)\s*\(/gi,
+    reason: "Loose debug output makes shipped behavior harder to inspect and often leaks implementation details.",
+    replacementHint: "Use a named logger with levels, or remove the log before release."
+  },
+  {
     id: "comment-explains-syntax",
     label: "Comment explains syntax",
     severity: "low",
