@@ -37,6 +37,9 @@ declare module "node:path" {
     resolve(...parts: string[]): string;
     join(...parts: string[]): string;
     extname(filePath: string): string;
+    relative(from: string, to: string): string;
+    isAbsolute(filePath: string): boolean;
+    sep: string;
   };
   export default path;
 }
