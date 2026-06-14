@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { shouldIgnoreDirectory, shouldScanFile, toReportPath } from "./fileCollector";
+import { defaultMaxFileBytes, shouldIgnoreDirectory, shouldReadFile, shouldScanFile, toReportPath } from "./fileCollector";
 
 test("recognizes ignored dependency and build directories", () => {
   assert.equal(shouldIgnoreDirectory("node_modules"), true);
@@ -12,6 +12,13 @@ test("recognizes scanned text and source file extensions", () => {
   assert.equal(shouldScanFile("README.md"), true);
   assert.equal(shouldScanFile("App.TSX"), true);
   assert.equal(shouldScanFile("archive.zip"), false);
+});
+
+test("skips files above the byte limit", () => {
+  assert.equal(shouldReadFile(defaultMaxFileBytes, undefined), true);
+  assert.equal(shouldReadFile(defaultMaxFileBytes + 1, undefined), false);
+  assert.equal(shouldReadFile(10, 20), true);
+  assert.equal(shouldReadFile(21, 20), false);
 });
 
 test("keeps repo-local report paths relative", () => {
