@@ -11,6 +11,7 @@ test("flags visible placeholders and fake wiring language", () => {
     }
   ]);
 
+  assert.equal(report.schemaVersion, 1);
   assert.equal(report.summary.filesScanned, 1);
   assert.equal(report.summary.high, 2);
   assert.equal(report.summary.byCategory.implementation, 1);
