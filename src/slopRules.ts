@@ -1,8 +1,9 @@
+// deslop:ignore-file -- this file stores phrases the scanner is supposed to catch.
 import type { SlopRule } from "./types";
 
 const flags = "gi";
 
-export const slopRules: SlopRule[] = [
+const baseRules = [
   {
     id: "fake-production-claim",
     label: "Fake production claim",
@@ -75,7 +76,9 @@ export const slopRules: SlopRule[] = [
     reason: "Work markers are acceptable during development, but they need ownership before release.",
     replacementHint: "Turn the marker into an issue, a test, or a named non-goal."
   }
-].map((rule) => ({
+] satisfies SlopRule[];
+
+export const slopRules: SlopRule[] = baseRules.map((rule) => ({
   ...rule,
   pattern: new RegExp(rule.pattern.source, flags)
 }));
