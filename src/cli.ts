@@ -20,7 +20,7 @@ async function main(): Promise<void> {
   const files: FileInput[] = [];
 
   for (const root of roots) {
-    files.push(...await collectFiles(path.resolve(root)));
+    files.push(...await collectFiles(path.resolve(root), { reportRoot: process.cwd() }));
   }
 
   const report = analyzeFiles(files);
