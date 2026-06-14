@@ -1,6 +1,8 @@
 import { slopRules } from "./slopRules";
 import type { AuditReport, AuditSummary, FileInput, Finding, Severity } from "./types";
 
+const ignoreFileMarker = "deslop:ignore-file";
+
 const severityWeight: Record<Severity, number> = {
   high: 8,
   medium: 4,
@@ -9,8 +11,12 @@ const severityWeight: Record<Severity, number> = {
 
 export function analyzeFiles(files: FileInput[]): AuditReport {
   const findings: Finding[] = [];
+  let filesScanned = 0;
 
   for (const file of files) {
+    if (file.content.includes(ignoreFileMarker)) continue;
+
+    filesScanned += 1;
     const lineStarts = getLineStarts(file.content);
 
     for (const rule of slopRules) {
@@ -42,7 +48,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
   });
 
   return {
-    summary: summarize(files.length, findings),
+    summary: summarize(filesScanned, findings),
     findings
   };
 }
