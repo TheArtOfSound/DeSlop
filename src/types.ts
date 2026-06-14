@@ -45,6 +45,7 @@ export type AuditSummary = {
 };
 
 export type AuditReport = {
+  schemaVersion: 1;
   summary: AuditSummary;
   findings: Finding[];
 };
