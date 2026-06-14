@@ -22,6 +22,7 @@ declare module "node:fs" {
     stat(path: string): Promise<{
       isFile(): boolean;
       isDirectory(): boolean;
+      size: number;
     }>;
     readFile(path: string, encoding: "utf8"): Promise<string>;
     readdir(path: string, options: { withFileTypes: true }): Promise<Array<{
