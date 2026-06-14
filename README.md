@@ -1,6 +1,6 @@
 # DeSlop
 
-DeSlop scans a repo for wording and code residue that makes generated software feel fake: placeholders, vague product copy, fake maturity claims, weak error messages, syntax-comments, and unresolved work markers.
+DeSlop scans a repo for wording and code residue that makes generated software feel fake: placeholders, vague product copy, fake maturity claims, weak error messages, fake async behavior, dead navigation, browser-only permission state, syntax-comments, and unresolved work markers.
 
 The first version is a command line audit. It does not pretend to judge whether code was written by a person or a model. It judges whether the repo contains signals that make the product look unwired, overclaimed, or unfinished.
 
@@ -12,6 +12,11 @@ DeSlop flags:
 - phrases that claim maturity without evidence
 - copy that describes no actor, object, state, or consequence
 - error messages that do not tell the user what failed
+- artificial async delays used as demo behavior
+- reachable unimplemented branches
+- browser-only permission state that implies missing server enforcement
+- navigation elements that point nowhere
+- loose debug logs in scanned files
 - comments that explain syntax instead of product constraints
 - work markers that need an owner before release
 
@@ -34,17 +39,43 @@ Return JSON:
 npm run audit -- . --json
 ```
 
-Fail CI when high-severity findings exist:
+Fail when high-severity findings exist:
 
 ```bash
 npm run audit -- . --fail-on high
 ```
+
+Fail when the score is below a threshold:
+
+```bash
+npm run audit -- . --min-score 90
+```
+
+## JSON output
+
+JSON reports include `schemaVersion: 1`, summary counts, category counts, and exact finding evidence: file, line, column, matched text, reason, and fix direction.
 
 ## Development checks
 
 ```bash
 npm run check
 ```
+
+## File-level ignores
+
+A file can opt out with this marker:
+
+```txt
+deslop:ignore-file
+```
+
+A single line can opt out with this marker:
+
+```txt
+deslop:ignore-line
+```
+
+Use ignores for rule catalogs, fixtures, snapshots, or generated files that intentionally contain flagged text. Do not use them to hide release-path product code.
 
 ## Scoring
 
