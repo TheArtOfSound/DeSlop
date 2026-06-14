@@ -5,6 +5,7 @@ import type { AuditReport } from "./types";
 
 function report(score: number, high: number, medium: number, low: number): AuditReport {
   return {
+    schemaVersion: 1,
     summary: {
       score,
       filesScanned: 1,
