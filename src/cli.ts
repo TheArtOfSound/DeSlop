@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 
-import { promises as fs } from "node:fs";
 import path from "node:path";
 import { analyzeFiles } from "./analyzer";
+import { collectFiles } from "./fileCollector";
 import { shouldExitWithError } from "./exitPolicy";
 import { formatTextReport } from "./formatter";
 import type { FileInput, Severity } from "./types";
-
-const ignoredDirs = new Set([".git", "node_modules", "dist", "build", "coverage", ".next", ".turbo", ".cache"]);
-const scannedExtensions = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".jsx", ".json", ".html", ".css"]);
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
@@ -88,40 +85,6 @@ function parseArgs(args: string[]): CliOptions {
   }
 
   return options;
-}
-
-async function collectFiles(root: string): Promise<FileInput[]> {
-  const stats = await fs.stat(root);
-
-  if (stats.isFile()) {
-    if (!shouldScanFile(root)) return [];
-    return [{ path: root, content: await fs.readFile(root, "utf8") }];
-  }
-
-  if (!stats.isDirectory()) return [];
-
-  const entries = await fs.readdir(root, { withFileTypes: true });
-  const files: FileInput[] = [];
-
-  for (const entry of entries) {
-    const fullPath = path.join(root, entry.name);
-
-    if (entry.isDirectory()) {
-      if (ignoredDirs.has(entry.name)) continue;
-      files.push(...await collectFiles(fullPath));
-      continue;
-    }
-
-    if (entry.isFile() && shouldScanFile(fullPath)) {
-      files.push({ path: fullPath, content: await fs.readFile(fullPath, "utf8") });
-    }
-  }
-
-  return files;
-}
-
-function shouldScanFile(filePath: string): boolean {
-  return scannedExtensions.has(path.extname(filePath).toLowerCase());
 }
 
 function printReport(report: ReturnType<typeof analyzeFiles>): void {
