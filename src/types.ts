@@ -16,6 +16,8 @@ export type Finding = {
   filePath: string;
   line: number;
   column: number;
+  endColumn: number;
+  matchedText: string;
   excerpt: string;
   reason: string;
   replacementHint: string;
