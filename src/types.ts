@@ -1,9 +1,12 @@
 export type Severity = "low" | "medium" | "high";
 
+export type RuleCategory = "copy" | "ux" | "implementation" | "security" | "release-hygiene";
+
 export type SlopRule = {
   id: string;
   label: string;
   severity: Severity;
+  category: RuleCategory;
   pattern: RegExp;
   reason: string;
   replacementHint: string;
@@ -13,6 +16,7 @@ export type Finding = {
   ruleId: string;
   label: string;
   severity: Severity;
+  category: RuleCategory;
   filePath: string;
   line: number;
   column: number;
@@ -28,6 +32,8 @@ export type FileInput = {
   content: string;
 };
 
+export type CategoryCounts = Record<RuleCategory, number>;
+
 export type AuditSummary = {
   score: number;
   filesScanned: number;
@@ -35,6 +41,7 @@ export type AuditSummary = {
   high: number;
   medium: number;
   low: number;
+  byCategory: CategoryCounts;
 };
 
 export type AuditReport = {
