@@ -6,7 +6,7 @@ test("flags visible placeholders and fake wiring language", () => {
   const report = analyzeFiles([
     {
       path: "README.md",
-      content: "In production this would connect to a real database for John Doe."
+      content: "In production this would handle data for John Doe."
     }
   ]);
 
