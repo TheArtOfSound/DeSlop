@@ -1,3 +1,4 @@
+// deslop:ignore-file -- test fixtures intentionally contain flagged wording.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { analyzeFiles } from "./analyzer";
@@ -25,6 +26,18 @@ test("keeps concrete product wording clean", () => {
 
   assert.equal(report.summary.findingsTotal, 0);
   assert.equal(report.summary.score, 100);
+});
+
+test("honors the file-level ignore marker", () => {
+  const report = analyzeFiles([
+    {
+      path: "fixtures/bad-copy.md",
+      content: "// deslop:ignore-file\nSomething went wrong"
+    }
+  ]);
+
+  assert.equal(report.summary.filesScanned, 0);
+  assert.equal(report.summary.findingsTotal, 0);
 });
 
 test("reports line and column for matched wording", () => {
