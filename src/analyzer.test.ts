@@ -58,7 +58,7 @@ test("honors the file-level ignore marker", () => {
   assert.equal(report.summary.findingsTotal, 0);
 });
 
-test("reports line and column for matched wording", () => {
+test("reports exact match location", () => {
   const report = analyzeFiles([
     {
       path: "app.tsx",
@@ -69,4 +69,6 @@ test("reports line and column for matched wording", () => {
   assert.equal(report.findings.length, 1);
   assert.equal(report.findings[0]?.line, 2);
   assert.equal(report.findings[0]?.column, 16);
+  assert.equal(report.findings[0]?.endColumn, 36);
+  assert.equal(report.findings[0]?.matchedText, "Something went wrong");
 });
