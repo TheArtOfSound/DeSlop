@@ -25,7 +25,17 @@ test("parses failure thresholds", () => {
   assert.equal(options.minScore, 92);
 });
 
+test("parses scan size threshold", () => {
+  const options = parseCliArgs(["--max-file-bytes", "5000"]);
+  assert.equal(options.maxFileBytes, 5000);
+});
+
 test("rejects invalid minimum scores", () => {
   assert.equal(throws(() => parseCliArgs(["--min-score", "101"])), true);
   assert.equal(throws(() => parseCliArgs(["--min-score", "nope"])), true);
+});
+
+test("rejects invalid scan size thresholds", () => {
+  assert.equal(throws(() => parseCliArgs(["--max-file-bytes", "0"])), true);
+  assert.equal(throws(() => parseCliArgs(["--max-file-bytes", "nope"])), true);
 });
