@@ -1,0 +1,12 @@
+{
+  "name": "DeSlop",
+  "short_name": "DeSlop",
+  "description": "Static repository scanner for fake completeness, vague product copy, weak errors, debug residue, browser-side auth storage, and unfinished implementation evidence.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "categories": ["developer", "productivity", "utilities"],
+  "lang": "en-US"
+}
