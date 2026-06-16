@@ -90,8 +90,8 @@ const baseRules = [
     label: "Client-only auth storage",
     severity: "high",
     category: "security",
-    pattern: /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`](token|auth|jwt|session|user|role)["'`]/gi,
-    reason: "Auth state stored only in browser storage is easy to spoof and usually means permissions are not enforced server-side.",
+    pattern: /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`][^"'`]*(token|auth|jwt|session|user|role|password|api[-_]?key|secret)[^"'`]*["'`]/gi,
+    reason: "Auth-like state stored in browser storage is easy to spoof and usually means permissions are not enforced server-side.",
     replacementHint: "Move permission enforcement to the server and treat browser state as display-only."
   },
   {
@@ -99,7 +99,7 @@ const baseRules = [
     label: "Dead navigation target",
     severity: "medium",
     category: "implementation",
-    pattern: /\b(href|to)=\{?["'`](#|javascript:void\(0\)|todo|coming-soon)["'`]\}?/gi,
+    pattern: /\b(href|to)=\{?["'`](#|javascript:void\(0\)|todo|coming-soon)["'`]?\}?/gi,
     reason: "A visible navigation element points nowhere, which is a direct fake-completeness signal.",
     replacementHint: "Remove the control, wire the destination, or show a disabled state with a concrete reason."
   },
