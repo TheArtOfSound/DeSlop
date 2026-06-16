@@ -1,7 +1,10 @@
+// deslop:ignore-file -- browser rule catalog intentionally contains phrases the scanner is supposed to catch.
 const supportedExtensions = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".jsx", ".json", ".html", ".css"]);
 const maxFiles = 80;
 const maxBytes = 250000;
 const weights = { high: 8, medium: 4, low: 1 };
+const ignoreFileMarker = "deslop:ignore-file";
+const ignoreLineMarker = "deslop:ignore-line";
 
 const authStoragePattern = /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`](?:[a-z0-9]+[-_])*(?:token|auth|jwt|session|user|role|password|apikey|api_key|api-key|secret)(?:[-_][a-z0-9]+)*["'`]/gi;
 const ruleData = [
@@ -10,7 +13,7 @@ const ruleData = [
   ["weak-error-message", "Weak error message", "medium", "ux", ["something" + " went wrong", "an error" + " occurred", "please try" + " again later", "unable to" + " complete request"], "The user gets no cause, consequence, or next step.", "Say what failed, why it matters, and what the user can do next."],
   ["dead-navigation-target", "Dead navigation target", "medium", "implementation", ["href=\"#\"", "href='" + "#'", "javascript:void(0)", "to=\"" + "#\""], "A visible navigation element points nowhere.", "Remove it, wire it, or show a disabled state with a concrete reason."],
   ["debug-log-leftover", "Debug output", "low", "release-hygiene", ["console." + "log(", "console." + "debug(", "console." + "trace("], "Loose debug output makes shipped behavior harder to inspect.", "Use a named logger with levels, or remove the output before release."],
-  ["client-only-auth-storage", "Browser-only trust state", "high", "security", [authStoragePattern], "Auth-like state stored in browser storage is easy to spoof and usually means permissions are not enforced server-side.", "Move permission enforcement to the server and treat browser state as display-only."],
+  ["client-only-auth-storage", "Client-only auth storage", "high", "security", [authStoragePattern], "Auth-like state stored in browser storage is easy to spoof and usually means permissions are not enforced server-side.", "Move permission enforcement to the server and treat browser state as display-only."],
   ["unfinished-branch", "Unfinished branch", "high", "implementation", ["not" + " implemented", "throw new Error(\"" + "stub\"", "throw new Error('" + "stub'"], "The code can reach a branch that admits the product is unfinished.", "Implement the branch, remove the route, or fail earlier with a precise constraint."]
 ];
 
@@ -37,7 +40,14 @@ function lineNumber(text, index) {
   return text.slice(0, index).split("\n").length;
 }
 
+function lineText(text, index) {
+  const start = text.lastIndexOf("\n", index) + 1;
+  const end = text.indexOf("\n", index);
+  return text.slice(start, end === -1 ? text.length : end);
+}
+
 function shouldSuppressFinding(path, id, text, index) {
+  if (lineText(text, index).includes(ignoreLineMarker)) return true;
   if (id !== "debug-log-leftover") return false;
   const normalized = path.toLowerCase();
   if (normalized.endsWith(".md") || normalized.endsWith(".mdx")) return true;
@@ -55,6 +65,7 @@ function isInsideHtmlCodeExample(text, index) {
 }
 
 function scanFile(file) {
+  if (file.text.includes(ignoreFileMarker)) return [];
   const findings = [];
   for (const [id, label, severity, category, terms, reason, fix] of ruleData) {
     const lower = file.text.toLowerCase();
