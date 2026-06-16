@@ -1,0 +1,42 @@
+# DeSlop
+
+DeSlop is a public repo scanner for vague product copy and code residue that makes software look unwired or unfinished.
+
+Public page: https://theartofsound.github.io/DeSlop/
+Repository: https://github.com/TheArtOfSound/DeSlop
+
+Core command:
+
+```bash
+npm run audit -- .
+```
+
+Useful options:
+
+```bash
+npm run audit -- . --json
+npm run audit -- . --fail-on high
+npm run audit -- . --min-score 90
+npm run audit -- . --max-file-bytes 250000
+npm run verify:page
+```
+
+Report contract:
+
+- schemaVersion: 1
+- summary score and counts
+- category counts
+- exact finding evidence
+- fix direction for each finding
+
+Rule categories:
+
+- copy
+- ux
+- implementation
+- security
+- release-hygiene
+
+Design constraint:
+
+DeSlop does not claim to identify who wrote code. It checks visible repo evidence and reports specific findings with file, line, matched text, reason, and fix direction.
