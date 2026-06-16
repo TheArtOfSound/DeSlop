@@ -9,7 +9,7 @@ It does not pretend to judge whether code was written by a person or a model. It
 Open the public page, paste a public GitHub repo URL, and click Analyze:
 
 ```txt
-https://theartofsound.github.io/DeSlop/
+https://deslop.imagineqira.com/
 ```
 
 Browser mode is best for a quick first pass on public repos. It scans capped public files directly from GitHub and shows score, severity counts, files, lines, matched text, reasons, and fix direction.
@@ -85,7 +85,7 @@ open index.html
 Public page target:
 
 ```txt
-https://theartofsound.github.io/DeSlop/
+https://deslop.imagineqira.com/
 ```
 
 GitHub Pages should use this source setting:
