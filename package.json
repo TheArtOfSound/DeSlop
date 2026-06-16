@@ -5,11 +5,13 @@
   "description": "Repo scanner for vague product copy, placeholder code, and fake-complete AI app residue.",
   "license": "UNLICENSED",
   "scripts": {
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist dist-page",
     "build": "tsc -p tsconfig.json",
     "check": "npm run clean && npm run build && node --test \"dist/**/*.test.js\"",
     "audit": "npm run build && node dist/cli.js",
-    "verify:page": "node scripts/verify-public-page.mjs"
+    "build:page": "node scripts/build-public-page.mjs",
+    "verify:page": "node scripts/verify-public-page.mjs .",
+    "verify:page:dist": "node scripts/verify-public-page.mjs dist-page"
   },
   "bin": {
     "deslop": "dist/cli.js"
