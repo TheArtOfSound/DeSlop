@@ -22,7 +22,7 @@ DeSlop flags:
 
 ## Public index
 
-The repo includes a static `index.html` landing page.
+The repo includes a static `index.html` landing page and a GitHub Actions Pages workflow.
 
 Open it locally:
 
@@ -30,10 +30,16 @@ Open it locally:
 open index.html
 ```
 
-If GitHub Pages is set to serve from the repository root, the public page target is:
+Public page target:
 
 ```txt
 https://theartofsound.github.io/DeSlop/
+```
+
+GitHub Pages should use this source setting:
+
+```txt
+Source: GitHub Actions
 ```
 
 ## Run it
