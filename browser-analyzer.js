@@ -3,13 +3,14 @@ const maxFiles = 80;
 const maxBytes = 250000;
 const weights = { high: 8, medium: 4, low: 1 };
 
+const authStoragePattern = /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`][^"'`]*(token|auth|jwt|session|user|role|password|api[-_]?key|secret)[^"'`]*["'`]/gi;
 const ruleData = [
   ["fake-production-claim", "Fake maturity claim", "high", "release-hygiene", ["production" + "-ready", "enterprise" + "-grade", "battle" + "-tested", "world" + "-class"], "Large maturity claims need proof.", "Name the guarantee the system actually enforces."],
   ["generic-saas-filler", "Generic product filler", "medium", "copy", ["streamline" + " your workflow", "unlock" + " your potential", "seamless" + " experience", "robust" + " solution", "all-in-one" + " platform", "built for" + " modern teams"], "The phrase could describe almost any app.", "Use actor, action, object, and consequence."],
   ["weak-error-message", "Weak error message", "medium", "ux", ["something" + " went wrong", "an error" + " occurred", "please try" + " again later", "unable to" + " complete request"], "The user gets no cause, consequence, or next step.", "Say what failed, why it matters, and what the user can do next."],
   ["dead-navigation-target", "Dead navigation target", "medium", "implementation", ["href=\"#\"", "href='" + "#'", "javascript:void(0)", "to=\"" + "#\""], "A visible navigation element points nowhere.", "Remove it, wire it, or show a disabled state with a concrete reason."],
   ["debug-log-leftover", "Debug output", "low", "release-hygiene", ["console." + "log(", "console." + "debug(", "console." + "trace("], "Loose debug output makes shipped behavior harder to inspect.", "Use a named logger with levels, or remove the output before release."],
-  ["client-only-auth-storage", "Browser-only trust state", "high", "security", ["local" + "Storage", "session" + "Storage"], "Permission state in browser storage often means server enforcement is missing.", "Move permission enforcement to the server and treat browser state as display-only."],
+  ["client-only-auth-storage", "Browser-only trust state", "high", "security", [authStoragePattern], "Auth-like state stored in browser storage is easy to spoof and usually means permissions are not enforced server-side.", "Move permission enforcement to the server and treat browser state as display-only."],
   ["unfinished-branch", "Unfinished branch", "high", "implementation", ["not" + " implemented", "throw new Error(\"" + "stub\"", "throw new Error('" + "stub'"], "The code can reach a branch that admits the product is unfinished.", "Implement the branch, remove the route, or fail earlier with a precise constraint."]
 ];
 
@@ -36,11 +37,26 @@ function lineNumber(text, index) {
   return text.slice(0, index).split("\n").length;
 }
 
+function shouldSuppressFinding(path, id) {
+  const normalized = path.toLowerCase();
+  const isDoc = normalized.endsWith(".md") || normalized.endsWith(".mdx");
+  return isDoc && id === "debug-log-leftover";
+}
+
 function scanFile(file) {
   const findings = [];
   for (const [id, label, severity, category, terms, reason, fix] of ruleData) {
+    if (shouldSuppressFinding(file.path, id)) continue;
     const lower = file.text.toLowerCase();
     for (const term of terms) {
+      if (term instanceof RegExp) {
+        term.lastIndex = 0;
+        for (const match of file.text.matchAll(term)) {
+          if (match.index === undefined) continue;
+          findings.push({ id, label, severity, category, file: file.path, line: lineNumber(file.text, match.index), matchedText: match[0], reason, fix });
+        }
+        continue;
+      }
       const needle = term.toLowerCase();
       let position = lower.indexOf(needle);
       while (position !== -1) {
