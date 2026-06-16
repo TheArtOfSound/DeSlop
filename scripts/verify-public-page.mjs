@@ -1,4 +1,17 @@
 import { access, readFile } from "node:fs/promises";
+import { join } from "node:path";
+
+const baseDir = process.argv[2] ?? ".";
+const sourceChecks = baseDir === "." ? [
+  {
+    file: ".github/workflows/pages.yml",
+    includes: [
+      "actions/configure-pages@v5",
+      "actions/upload-pages-artifact@v3",
+      "actions/deploy-pages@v4"
+    ]
+  }
+] : [];
 
 const checks = [
   {
@@ -10,14 +23,7 @@ const checks = [
       "Deploy runs"
     ]
   },
-  {
-    file: ".github/workflows/pages.yml",
-    includes: [
-      "actions/configure-pages@v5",
-      "actions/upload-pages-artifact@v3",
-      "actions/deploy-pages@v4"
-    ]
-  },
+  ...sourceChecks,
   {
     file: "robots.txt",
     includes: ["Sitemap: https://theartofsound.github.io/DeSlop/sitemap.xml"]
@@ -36,15 +42,16 @@ const checks = [
   }
 ];
 
-await access(".nojekyll");
+await access(join(baseDir, ".nojekyll"));
 
 for (const check of checks) {
-  const text = await readFile(check.file, "utf8");
+  const filePath = join(baseDir, check.file);
+  const text = await readFile(filePath, "utf8");
   for (const expected of check.includes) {
     if (!text.includes(expected)) {
-      throw new Error(`${check.file} is missing expected text: ${expected}`);
+      throw new Error(`${filePath} is missing expected text: ${expected}`);
     }
   }
 }
 
-console.log("Public page verification passed.");
+console.log(`Public page verification passed for ${baseDir}.`);
