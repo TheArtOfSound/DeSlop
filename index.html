@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DeSlop</title>
-  <meta name="description" content="Paste a public GitHub repo URL and run a browser-side DeSlop pass.">
+  <meta name="description" content="Paste a public GitHub repo URL and run a browser-side DeSlop pass. Browser mode falls back to jsDelivr if GitHub API is rate limited.">
   <link rel="canonical" href="https://deslop.imagineqira.com/">
   <style>
     :root { color-scheme: dark; --bg:#0a0a0a; --panel:#101010; --panel2:#151515; --text:#f2f2f2; --muted:#a8a8a8; --line:#333333; --code:#dcdcdc; }
@@ -77,7 +77,7 @@ npx -y github:TheArtOfSound/DeSlop -- . --json</pre>
       </section>
       <section class="panel" id="analyze">
         <h2>Analyze public repo</h2>
-        <p>Paste a public GitHub repository URL. Browser mode scans up to 80 supported files under 250 KB each.</p>
+        <p>Paste a public GitHub repository URL. Browser mode scans up to 80 supported files under 250 KB each. If GitHub API is rate limited, it falls back to jsDelivr for public repos.</p>
         <div class="actions">
           <input id="repoInput" aria-label="GitHub repository URL" value="https://github.com/TheArtOfSound/DeSlop">
           <button class="primary" id="analyzeButton" type="button">Analyze</button>
@@ -108,8 +108,8 @@ npx -y github:TheArtOfSound/DeSlop -- . --json</pre>
         <h2>Verification</h2>
         <table class="table">
           <tr><th>Page source</th><td><code>index.html</code></td></tr>
-          <tr><th>Analyzer script</th><td><code>browser-analyzer.js?v=browser-ignore-markers-1</code></td></tr>
-          <tr><th>Browser mode</th><td>GitHub API for repo tree, raw file fetch for contents, capped file count, capped file size</td></tr>
+          <tr><th>Analyzer script</th><td><code>browser-analyzer.js?v=cdn-fallback-1</code></td></tr>
+          <tr><th>Browser mode</th><td>GitHub API first, jsDelivr public CDN fallback, capped file count, capped file size</td></tr>
           <tr><th>Pre-deploy check</th><td><code>npm run verify:page</code></td></tr>
         </table>
       </section>
@@ -119,6 +119,6 @@ npx -y github:TheArtOfSound/DeSlop -- . --json</pre>
       <span>TheArtOfSound / Bryan Leonard</span>
     </footer>
   </div>
-  <script src="browser-analyzer.js?v=browser-ignore-markers-1"></script>
+  <script src="browser-analyzer.js?v=cdn-fallback-1"></script>
 </body>
 </html>
