@@ -90,7 +90,7 @@ const baseRules = [
     label: "Client-only auth storage",
     severity: "high",
     category: "security",
-    pattern: /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`][a-z0-9_-]*(?:token|auth|jwt|session|user|role|password|apikey|api_key|api-key|secret)[a-z0-9_-]*["'`]/gi,
+    pattern: /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`](?:[a-z0-9]+[-_])*(?:token|auth|jwt|session|user|role|password|apikey|api_key|api-key|secret)(?:[-_][a-z0-9]+)*["'`]/gi,
     reason: "Auth-like state stored in browser storage is easy to spoof and usually means permissions are not enforced server-side.",
     replacementHint: "Move permission enforcement to the server and treat browser state as display-only."
   },
