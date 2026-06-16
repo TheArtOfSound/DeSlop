@@ -1,0 +1,50 @@
+name: DeSlop
+
+description: Audit a repository for vague copy and fake-complete software residue.
+
+inputs:
+  path:
+    description: Path to scan.
+    required: false
+    default: .
+  min-score:
+    description: Minimum score required for the workflow to pass.
+    required: false
+    default: "90"
+  fail-on:
+    description: Optional severity threshold: low, medium, or high.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Checkout DeSlop
+      uses: actions/checkout@v4
+      with:
+        repository: TheArtOfSound/DeSlop
+        path: .deslop-action
+
+    - name: Install DeSlop
+      shell: bash
+      run: npm install
+      working-directory: .deslop-action
+
+    - name: Build DeSlop
+      shell: bash
+      run: npm run build
+      working-directory: .deslop-action
+
+    - name: Run DeSlop
+      shell: bash
+      run: |
+        args=("${{ inputs.path }}" "--min-score" "${{ inputs.min-score }}")
+        if [ -n "${{ inputs.fail-on }}" ]; then
+          args+=("--fail-on" "${{ inputs.fail-on }}")
+        fi
+        node .deslop-action/dist/cli.js "${args[@]}"
