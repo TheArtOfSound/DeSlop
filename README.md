@@ -1,8 +1,40 @@
 # DeSlop
 
-DeSlop scans a repo for wording and code residue that makes generated software feel fake: placeholders, vague product copy, fake maturity claims, weak error messages, fake async behavior, dead navigation, browser-only permission state, syntax-comments, and unresolved work markers.
+[![Public page](https://img.shields.io/badge/public_page-deslop.imagineqira.com-f2f2f2?style=flat-square)](https://deslop.imagineqira.com/)
+[![Repo](https://img.shields.io/badge/GitHub-TheArtOfSound%2FDeSlop-f2f2f2?style=flat-square&logo=github)](https://github.com/TheArtOfSound/DeSlop)
+[![CLI](https://img.shields.io/badge/CLI-npx%20github%3ATheArtOfSound%2FDeSlop-f2f2f2?style=flat-square)](#cli-use)
+[![Schema](https://img.shields.io/badge/report_schema-v1-f2f2f2?style=flat-square)](#json-output)
 
-It does not pretend to judge whether code was written by a person or a model. It judges whether the repo contains signals that make the product look unwired, overclaimed, or unfinished.
+DeSlop is a deterministic repo scanner for visible evidence that software looks unwired, overclaimed, unfinished, or harder to trust. It reports exact files, lines, matched text, reasons, severity, and fix direction.
+
+It is not an authorship detector. It does not decide whether code came from a person or a model. It checks the repo evidence a reviewer, user, investor, or maintainer would see.
+
+## Quick links
+
+| Destination | Link |
+| --- | --- |
+| Browser scanner | https://deslop.imagineqira.com/ |
+| GitHub repo | https://github.com/TheArtOfSound/DeSlop |
+| Usage guide | https://deslop.imagineqira.com/USAGE.md |
+| LLM summary | https://deslop.imagineqira.com/llms.txt |
+| Full LLM context | https://deslop.imagineqira.com/llms-full.txt |
+| Status contract | https://deslop.imagineqira.com/status.json |
+| Sitemap | https://deslop.imagineqira.com/sitemap.xml |
+
+## Recommended GitHub About settings
+
+Use these in the repository sidebar so GitHub search and visitors understand the project quickly.
+
+```txt
+Description:
+Static repo scanner for fake completeness, vague product copy, weak errors, dead links, client-side auth signals, and unfinished code paths.
+
+Website:
+https://deslop.imagineqira.com/
+
+Topics:
+static-analysis, repo-scanner, github-actions, cli-tool, code-audit, quality-gate, product-copy, security-review, developer-tools, ai-code-review
+```
 
 ## Fastest use: browser UI
 
@@ -12,7 +44,7 @@ Open the public page, paste a public GitHub repo URL, and click Analyze:
 https://deslop.imagineqira.com/
 ```
 
-Browser mode is best for a quick first pass on public repos. It scans capped public files directly from GitHub and shows score, severity counts, files, lines, matched text, reasons, and fix direction.
+Browser mode is best for a quick first pass on public repos. It scans capped public files from GitHub, falls back to a public CDN when anonymous GitHub API access is rate limited, and shows score, severity counts, files, lines, matched text, reasons, and fix direction.
 
 ## CLI use
 
@@ -36,7 +68,7 @@ npx -y github:TheArtOfSound/DeSlop -- . --json
 
 ## Use in GitHub Actions
 
-Create `.github/workflows/deslop.yml` in the repo you want to check:
+Create this workflow in the repo you want to check:
 
 ```yaml
 name: DeSlop
@@ -56,21 +88,33 @@ jobs:
           min-score: "90"
 ```
 
-## Current audit scope
+## What DeSlop checks
 
 DeSlop flags:
 
-- visible placeholders such as demo names, filler domains, and launch-page leftovers
-- phrases that claim maturity without evidence
-- copy that describes no actor, object, state, or consequence
+- visible release-path fixtures and generic demo residue
+- maturity claims that lack tests, deployment evidence, threat model, uptime history, or customer evidence
+- copy that does not name an actor, object, state, or consequence
 - error messages that do not tell the user what failed
-- artificial async delays used as demo behavior
+- artificial demo behavior hiding a missing async boundary
 - reachable unimplemented branches
-- browser-only permission state that implies missing server enforcement
+- browser-side auth-like state that can imply missing server enforcement
 - navigation elements that point nowhere
-- loose debug logs in scanned files
-- comments that explain syntax instead of product constraints
-- work markers that need an owner before release
+- loose debug output in shipped app code
+- syntax-level comments that do not explain a product constraint
+- work markers that need ownership before release
+
+## Why it exists
+
+AI-assisted software can look complete before the implementation is actually trustworthy. DeSlop gives a blunt review pass that points to concrete repo evidence instead of giving a vague vibe score.
+
+Useful review questions:
+
+- Is the page making a claim the repo does not prove?
+- Is the user clicking a control that has no destination?
+- Is auth-like state treated as browser truth?
+- Is the error message specific enough to act on?
+- Is a demo path pretending to be a release path?
 
 ## Public index
 
@@ -141,7 +185,7 @@ JSON reports include `schemaVersion: 1`, summary counts, category counts, and ex
 
 By default, DeSlop skips supported files larger than 1,000,000 bytes. Use `--max-file-bytes` to lower or raise that limit for CI and large repos.
 
-## File-level ignores
+## Ignore markers
 
 A file can opt out with this marker:
 
@@ -165,7 +209,7 @@ The score starts at 100.
 - medium finding: -4
 - low finding: -1
 
-The score is not a truth score. It is a pressure gauge. A clean score means the current rules did not find wording slop; it does not mean the product is complete.
+The score is not a truth score. It is a pressure gauge. A clean score means the current rules did not find the configured evidence patterns; it does not mean the product is complete.
 
 ## Design rule
 
