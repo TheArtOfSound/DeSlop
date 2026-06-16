@@ -1,0 +1,70 @@
+# DeSlop full context
+
+URL: https://deslop.imagineqira.com/
+Repository: https://github.com/TheArtOfSound/DeSlop
+Creator: Bryan Leonard / TheArtOfSound
+
+## Description
+
+DeSlop is a deterministic static repository scanner. It is not an authorship detector and it does not claim to prove whether a person or model wrote code. Its job is to report visible repository evidence that can make software look unwired, overclaimed, unfinished, or harder to trust.
+
+## Primary use cases
+
+- Paste a public GitHub repository URL into the browser tool.
+- Run a local audit with npx against private, local, or larger repositories.
+- Use DeSlop as a CI quality gate with severity or score thresholds.
+- Produce JSON output for reports, review prompts, or automated workflows.
+
+## Browser mode
+
+Browser mode scans supported public files from a GitHub repository. It caps file count and file size for speed. It uses the GitHub API first and can fall back to a public CDN listing when anonymous GitHub API access is rate limited.
+
+## CLI mode
+
+Core command:
+
+```bash
+npx -y github:TheArtOfSound/DeSlop -- .
+```
+
+Useful commands:
+
+```bash
+npx -y github:TheArtOfSound/DeSlop -- . --json
+npx -y github:TheArtOfSound/DeSlop -- . --fail-on high
+npx -y github:TheArtOfSound/DeSlop -- . --min-score 90
+```
+
+## Report output
+
+The report contains schemaVersion, summary score, file count, severity counts, category counts, and findings. Each finding includes rule id, label, severity, category, file path, line, column, matched text, reason, and replacement hint.
+
+## Rule categories
+
+- copy
+- ux
+- implementation
+- security
+- release-hygiene
+
+## Supported browser file types
+
+- Markdown and text
+- JSON
+- HTML
+- CSS
+- JavaScript and TypeScript
+- JSX and TSX
+
+## Ignore markers
+
+Intentional fixtures can be excluded with:
+
+```txt
+deslop:ignore-file
+deslop:ignore-line
+```
+
+## Important limitation
+
+A clean DeSlop score does not prove that software is complete, safe, or production quality. It only means the scanner did not find its configured visible evidence patterns in the scanned files.
