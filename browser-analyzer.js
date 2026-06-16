@@ -37,22 +37,33 @@ function lineNumber(text, index) {
   return text.slice(0, index).split("\n").length;
 }
 
-function shouldSuppressFinding(path, id) {
+function shouldSuppressFinding(path, id, text, index) {
+  if (id !== "debug-log-leftover") return false;
   const normalized = path.toLowerCase();
-  const isDoc = normalized.endsWith(".md") || normalized.endsWith(".mdx");
-  return isDoc && id === "debug-log-leftover";
+  if (normalized.endsWith(".md") || normalized.endsWith(".mdx")) return true;
+  if (normalized.endsWith(".html") && isInsideHtmlCodeExample(text, index)) return true;
+  return false;
+}
+
+function isInsideHtmlCodeExample(text, index) {
+  const before = text.slice(0, index).toLowerCase();
+  const lastPreOpen = before.lastIndexOf("<pre");
+  const lastPreClose = before.lastIndexOf("</pre>");
+  const lastCodeOpen = before.lastIndexOf("<code");
+  const lastCodeClose = before.lastIndexOf("</code>");
+  return lastPreOpen > lastPreClose || lastCodeOpen > lastCodeClose;
 }
 
 function scanFile(file) {
   const findings = [];
   for (const [id, label, severity, category, terms, reason, fix] of ruleData) {
-    if (shouldSuppressFinding(file.path, id)) continue;
     const lower = file.text.toLowerCase();
     for (const term of terms) {
       if (term instanceof RegExp) {
         term.lastIndex = 0;
         for (const match of file.text.matchAll(term)) {
           if (match.index === undefined) continue;
+          if (shouldSuppressFinding(file.path, id, file.text, match.index)) continue;
           findings.push({ id, label, severity, category, file: file.path, line: lineNumber(file.text, match.index), matchedText: match[0], reason, fix });
         }
         continue;
@@ -60,7 +71,9 @@ function scanFile(file) {
       const needle = term.toLowerCase();
       let position = lower.indexOf(needle);
       while (position !== -1) {
-        findings.push({ id, label, severity, category, file: file.path, line: lineNumber(file.text, position), matchedText: file.text.slice(position, position + term.length), reason, fix });
+        if (!shouldSuppressFinding(file.path, id, file.text, position)) {
+          findings.push({ id, label, severity, category, file: file.path, line: lineNumber(file.text, position), matchedText: file.text.slice(position, position + term.length), reason, fix });
+        }
         position = lower.indexOf(needle, position + needle.length);
       }
     }
