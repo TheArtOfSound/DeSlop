@@ -39,6 +39,14 @@ const checks = [
       "Public page: https://theartofsound.github.io/DeSlop/",
       "schemaVersion: 1"
     ]
+  },
+  {
+    file: "status.json",
+    includes: [
+      "\"name\": \"DeSlop\"",
+      "\"publicUrl\": \"https://theartofsound.github.io/DeSlop/\"",
+      "\"artifactDirectory\": \"dist-page\""
+    ]
   }
 ];
 
