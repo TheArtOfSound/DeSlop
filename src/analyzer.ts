@@ -30,7 +30,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
         if (match.index === undefined) continue;
         const excerpt = getLine(file.content, match.index).trim();
         if (excerpt.includes(ignoreLineMarker)) continue;
-        if (shouldSuppressFinding(file.path, rule.id)) continue;
+        if (shouldSuppressFinding(file.path, rule.id, file.content, match.index)) continue;
 
         const location = getLocation(lineStarts, match.index);
         const seenKey = `${rule.id}:${location.line}`;
@@ -71,10 +71,24 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
   };
 }
 
-function shouldSuppressFinding(filePath: string, ruleId: string): boolean {
+function shouldSuppressFinding(filePath: string, ruleId: string, content: string, index: number): boolean {
+  if (ruleId !== "debug-log-leftover") return false;
+
   const normalized = filePath.toLowerCase();
-  const isDoc = normalized.endsWith(".md") || normalized.endsWith(".mdx");
-  return isDoc && ruleId === "debug-log-leftover";
+  if (normalized.endsWith(".md") || normalized.endsWith(".mdx")) return true;
+  if (normalized.endsWith(".html") && isInsideHtmlCodeExample(content, index)) return true;
+
+  return false;
+}
+
+function isInsideHtmlCodeExample(content: string, index: number): boolean {
+  const before = content.slice(0, index).toLowerCase();
+  const lastPreOpen = before.lastIndexOf("<pre");
+  const lastPreClose = before.lastIndexOf("</pre>");
+  const lastCodeOpen = before.lastIndexOf("<code");
+  const lastCodeClose = before.lastIndexOf("</code>");
+
+  return lastPreOpen > lastPreClose || lastCodeOpen > lastCodeClose;
 }
 
 function summarize(filesScanned: number, findings: Finding[]): AuditSummary {
