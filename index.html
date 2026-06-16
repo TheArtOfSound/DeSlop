@@ -97,12 +97,13 @@ npm run audit -- . --max-file-bytes 250000</pre>
 
       <section class="card" id="verify" style="margin-top:18px">
         <h2>Verification</h2>
-        <p class="lead">This page is static HTML committed to the public repo. The Pages deployment uses GitHub Actions.</p>
+        <p class="lead">This page is static HTML committed to the public repo. The Pages deployment runs <code>npm run verify:page</code> before upload.</p>
         <ul class="checklist">
           <li>Public page file: <code>index.html</code></li>
+          <li>Pre-deploy verifier: <code>scripts/verify-public-page.mjs</code></li>
           <li>Deploy workflow: <code>.github/workflows/pages.yml</code></li>
           <li>Static serving marker: <code>.nojekyll</code></li>
-          <li>Crawler files: <code>robots.txt</code> and <code>sitemap.xml</code></li>
+          <li>Crawler files: <code>robots.txt</code>, <code>sitemap.xml</code>, and <code>llms.txt</code></li>
         </ul>
       </section>
     </main>
