@@ -4,6 +4,18 @@ DeSlop is for checking a repo before you show it to users, reviewers, customers,
 
 It looks for visible signs that a project is not really wired yet: vague copy, placeholder residue, weak errors, dead links, fake async behavior, unfinished branches, debug logs, and browser-only trust state.
 
+## Browser UI
+
+Open:
+
+```txt
+https://theartofsound.github.io/DeSlop/
+```
+
+Paste a public GitHub repo URL and click Analyze.
+
+Browser mode is the easiest first pass. It scans capped public files directly from GitHub and shows score, severity counts, files, lines, matched text, reasons, and fix direction.
+
 ## One command
 
 Run this from inside the repo you want to check:
