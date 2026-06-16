@@ -10,6 +10,15 @@ const sourceChecks = baseDir === "." ? [
       "actions/upload-pages-artifact@v3",
       "actions/deploy-pages@v4"
     ]
+  },
+  {
+    file: "docs/public-page.md",
+    includes: [
+      "developer tool page",
+      "flat layout",
+      "rounded cards",
+      "gradient backgrounds"
+    ]
   }
 ] : [];
 
