@@ -108,6 +108,20 @@ const benchmarkCases: BenchmarkCase[] = [
     expected: { high: 0, medium: 0, low: 0, categories: {} }
   },
   {
+    name: "html pre examples can use console logging",
+    files: [
+      {
+        path: "site/index.html",
+        content: [
+          "<pre>",
+          join(["console.", "log(result)"]),
+          "</pre>"
+        ].join("\n")
+      }
+    ],
+    expected: { high: 0, medium: 0, low: 0, categories: {} }
+  },
+  {
     name: "preference storage is not auth storage",
     files: [
       {
