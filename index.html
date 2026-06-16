@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeSlop</title>
+  <meta name="description" content="DeSlop scans repos for vague copy, weak errors, dead navigation, debug residue, and overclaimed behavior.">
+  <style>
+    :root { color-scheme: dark; --bg:#070707; --panel:#121212; --text:#f6f6f0; --muted:#b8b8ad; --line:#2a2a2a; --accent:#fff; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(circle at 20% 10%, rgba(255,255,255,.12), transparent 360px), var(--bg); color:var(--text); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .wrap { width:min(1080px, calc(100% - 32px)); margin:0 auto; padding:32px 0 56px; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:12px 0 48px; }
+    .brand { font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+    nav { display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-size:14px; }
+    a { color:inherit; text-decoration:none; }
+    a:hover { color:var(--text); }
+    .hero { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; align-items:stretch; }
+    .card { border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)); border-radius:28px; padding:clamp(24px, 5vw, 56px); }
+    h1 { margin:0; font-size:clamp(52px, 9vw, 112px); line-height:.86; letter-spacing:-.08em; }
+    .lead { color:var(--muted); font-size:clamp(18px, 2.2vw, 24px); line-height:1.38; max-width:720px; margin:26px 0 0; }
+    .buttons { display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
+    .button { border:1px solid var(--accent); border-radius:999px; padding:13px 18px; font-weight:800; }
+    .button.primary { background:var(--text); color:#050505; }
+    pre { margin:0; white-space:pre-wrap; font:14px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color:#ededdf; }
+    .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:18px; }
+    .tile { border:1px solid var(--line); border-radius:22px; background:var(--panel); padding:22px; }
+    .tile h2 { margin:0 0 10px; font-size:18px; }
+    .tile p, li { color:var(--muted); line-height:1.55; }
+    footer { margin-top:30px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    @media (max-width:800px) { header, .hero { grid-template-columns:1fr; } header { align-items:flex-start; flex-direction:column; } .grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">DeSlop</div>
+      <nav aria-label="Page links">
+        <a href="#run">Run</a>
+        <a href="#scope">Scope</a>
+        <a href="#report">Report</a>
+        <a href="https://github.com/TheArtOfSound/DeSlop">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="card">
+          <h1>Repo audits for software that feels unwired.</h1>
+          <p class="lead">DeSlop scans product copy and source files for concrete signals: vague wording, weak errors, dead navigation, debug residue, browser-only trust state, and claims without evidence.</p>
+          <div class="buttons">
+            <a class="button primary" href="https://github.com/TheArtOfSound/DeSlop">View repo</a>
+            <a class="button" href="#run">Read commands</a>
+          </div>
+        </div>
+        <div class="card" id="run">
+          <pre>npm install
+npm run audit -- .
+npm run audit -- . --json
+npm run audit -- . --fail-on high
+npm run audit -- . --min-score 90
+npm run audit -- . --max-file-bytes 250000</pre>
+        </div>
+      </section>
+
+      <section class="grid" id="scope">
+        <div class="tile"><h2>What it checks</h2><p>Copy, UX, implementation, security, and release hygiene findings with file, line, matched text, reason, and fix direction.</p></div>
+        <div class="tile"><h2>What it avoids</h2><p>It does not claim who wrote the code. It scores visible repo evidence and keeps findings specific.</p></div>
+        <div class="tile"><h2>Why it exists</h2><p>Repos can look finished before the core behavior is wired. DeSlop catches that residue earlier.</p></div>
+      </section>
+
+      <section class="card" id="report" style="margin-top:18px">
+        <h2>Report contract</h2>
+        <pre>{
+  "schemaVersion": 1,
+  "summary": {
+    "score": 100,
+    "filesScanned": 15,
+    "findingsTotal": 0
+  },
+  "findings": []
+}</pre>
+      </section>
+    </main>
+
+    <footer>
+      <span>DeSlop is a pressure gauge, not a truth score.</span>
+      <span>TheArtOfSound / Bryan Leonard</span>
+    </footer>
+  </div>
+</body>
+</html>
