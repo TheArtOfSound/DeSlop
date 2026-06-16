@@ -1,0 +1,41 @@
+name: Verify DeSlop
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run engine checks
+        run: npm run check
+
+      - name: Verify public page source
+        run: npm run verify:page
+
+      - name: Build public page artifact
+        run: npm run build:page
+
+      - name: Verify public page artifact
+        run: npm run verify:page:dist
+
+      - name: Self-audit repository
+        run: npm run audit -- . --min-score 100
