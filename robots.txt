@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
+Allow: /index.html
+Allow: /browser-analyzer.js
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /USAGE.md
+Allow: /status.json
+Allow: /site.webmanifest
+Allow: /og-image.svg
 
 Sitemap: https://deslop.imagineqira.com/sitemap.xml
+
+# DeSlop public URLs
+# Home: https://deslop.imagineqira.com/
+# LLM summary: https://deslop.imagineqira.com/llms.txt
+# Full LLM context: https://deslop.imagineqira.com/llms-full.txt
+# Repository: https://github.com/TheArtOfSound/DeSlop
