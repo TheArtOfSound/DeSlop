@@ -3,7 +3,7 @@ const maxFiles = 80;
 const maxBytes = 250000;
 const weights = { high: 8, medium: 4, low: 1 };
 
-const authStoragePattern = /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`][^"'`]*(token|auth|jwt|session|user|role|password|api[-_]?key|secret)[^"'`]*["'`]/gi;
+const authStoragePattern = /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`](?:[^"'`]*[^a-z0-9])?(token|auth|jwt|session|user|role|password|api[-_]?key|secret)(?:[^a-z0-9][^"'`]*)?["'`]/gi;
 const ruleData = [
   ["fake-production-claim", "Fake maturity claim", "high", "release-hygiene", ["production" + "-ready", "enterprise" + "-grade", "battle" + "-tested", "world" + "-class"], "Large maturity claims need proof.", "Name the guarantee the system actually enforces."],
   ["generic-saas-filler", "Generic product filler", "medium", "copy", ["streamline" + " your workflow", "unlock" + " your potential", "seamless" + " experience", "robust" + " solution", "all-in-one" + " platform", "built for" + " modern teams"], "The phrase could describe almost any app.", "Use actor, action, object, and consequence."],
