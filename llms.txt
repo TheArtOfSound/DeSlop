@@ -1,17 +1,20 @@
 # DeSlop
 
-DeSlop is a public repo scanner for vague product copy and code residue that makes software look unwired or unfinished.
+DeSlop is a deterministic repository scanner for visible evidence that software is unwired, overclaimed, or unfinished. It is built for public GitHub browser scans, local CLI audits, and CI quality gates.
 
 Public page: https://deslop.imagineqira.com/
 Repository: https://github.com/TheArtOfSound/DeSlop
+Full context: https://deslop.imagineqira.com/llms-full.txt
+Usage guide: https://deslop.imagineqira.com/USAGE.md
+Status: https://deslop.imagineqira.com/status.json
 
-Core command:
+## Core command
 
 ```bash
 npx -y github:TheArtOfSound/DeSlop -- .
 ```
 
-Useful options:
+## Useful options
 
 ```bash
 npx -y github:TheArtOfSound/DeSlop -- . --json
@@ -19,15 +22,26 @@ npx -y github:TheArtOfSound/DeSlop -- . --fail-on high
 npx -y github:TheArtOfSound/DeSlop -- . --min-score 90
 ```
 
-Report contract:
+## What DeSlop checks
+
+- Vague product copy and generic SaaS filler.
+- Unsupported maturity claims.
+- Weak error messages that do not explain cause, consequence, or next step.
+- Dead navigation targets and fake-complete UI controls.
+- Browser-side auth storage.
+- Debug residue outside docs or visible code examples.
+- Unimplemented branches and stubbed runtime paths.
+- Unresolved work markers that should become issues, tests, or named non-goals.
+
+## Report contract
 
 - schemaVersion: 1
 - summary score and counts
 - category counts
 - exact finding evidence
-- fix direction for each finding
+- file path, line, matched text, reason, and fix direction for each finding
 
-Rule categories:
+## Rule categories
 
 - copy
 - ux
@@ -35,6 +49,6 @@ Rule categories:
 - security
 - release-hygiene
 
-Design constraint:
+## Design constraint
 
-DeSlop does not claim to identify who wrote code. It checks visible repo evidence and reports specific findings with file, line, matched text, reason, and fix direction.
+DeSlop does not claim to identify whether code was written by a human or an AI model. It checks visible repository evidence and reports concrete findings with file, line, matched text, reason, and fix direction.
