@@ -42,6 +42,12 @@ GitHub Pages should use this source setting:
 Source: GitHub Actions
 ```
 
+Verify the committed public page files:
+
+```bash
+npm run verify:page
+```
+
 ## Run it
 
 ```bash
