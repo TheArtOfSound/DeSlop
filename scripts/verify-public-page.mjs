@@ -2,6 +2,7 @@ import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const baseDir = process.argv[2] ?? ".";
+const publicUrl = "https://deslop.imagineqira.com/";
 const sourceChecks = baseDir === "." ? [
   {
     file: ".github/workflows/pages.yml",
@@ -26,7 +27,7 @@ const checks = [
   {
     file: "index.html",
     includes: [
-      "https://theartofsound.github.io/DeSlop/",
+      publicUrl,
       "Analyze public repo",
       "browser-analyzer.js",
       "Report contract",
@@ -48,6 +49,10 @@ const checks = [
       "copyCommandButton"
     ]
   },
+  {
+    file: "CNAME",
+    includes: ["deslop.imagineqira.com"]
+  },
   ...sourceChecks,
   {
     file: "USAGE.md",
@@ -59,17 +64,17 @@ const checks = [
   },
   {
     file: "robots.txt",
-    includes: ["Sitemap: https://theartofsound.github.io/DeSlop/sitemap.xml"]
+    includes: ["Sitemap: https://deslop.imagineqira.com/sitemap.xml"]
   },
   {
     file: "sitemap.xml",
-    includes: ["<loc>https://theartofsound.github.io/DeSlop/</loc>"]
+    includes: ["<loc>https://deslop.imagineqira.com/</loc>"]
   },
   {
     file: "llms.txt",
     includes: [
       "# DeSlop",
-      "Public page: https://theartofsound.github.io/DeSlop/",
+      "Public page: https://deslop.imagineqira.com/",
       "schemaVersion: 1"
     ]
   },
@@ -77,7 +82,7 @@ const checks = [
     file: "status.json",
     includes: [
       "\"name\": \"DeSlop\"",
-      "\"publicUrl\": \"https://theartofsound.github.io/DeSlop/\"",
+      "\"publicUrl\": \"https://deslop.imagineqira.com/\"",
       "\"artifactDirectory\": \"dist-page\""
     ]
   }
