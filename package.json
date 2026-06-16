@@ -2,8 +2,28 @@
   "name": "deslop",
   "version": "0.1.0",
   "private": true,
-  "description": "Repo scanner for vague product copy, placeholder code, and fake-complete AI app residue.",
+  "description": "Static repo scanner for fake completeness, vague product copy, weak errors, dead links, client-side auth signals, and unfinished code paths.",
   "license": "UNLICENSED",
+  "homepage": "https://deslop.imagineqira.com/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheArtOfSound/DeSlop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheArtOfSound/DeSlop/issues"
+  },
+  "keywords": [
+    "static-analysis",
+    "repo-scanner",
+    "github-actions",
+    "cli-tool",
+    "code-audit",
+    "quality-gate",
+    "product-copy",
+    "security-review",
+    "developer-tools",
+    "ai-code-review"
+  ],
   "scripts": {
     "clean": "rm -rf dist dist-page",
     "build": "tsc -p tsconfig.json",
