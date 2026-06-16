@@ -20,6 +20,22 @@ DeSlop flags:
 - comments that explain syntax instead of product constraints
 - work markers that need an owner before release
 
+## Public index
+
+The repo includes a static `index.html` landing page.
+
+Open it locally:
+
+```bash
+open index.html
+```
+
+If GitHub Pages is set to serve from the repository root, the public page target is:
+
+```txt
+https://theartofsound.github.io/DeSlop/
+```
+
 ## Run it
 
 ```bash
