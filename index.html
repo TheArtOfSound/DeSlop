@@ -3,9 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DeSlop</title>
-  <meta name="description" content="Paste a public GitHub repo URL and run a browser-side DeSlop pass. Browser mode falls back to jsDelivr if GitHub API is rate limited.">
+  <title>DeSlop - Static Repo Scanner for Slop, Fake Completeness, and Code Residue</title>
+  <meta name="description" content="DeSlop is a browser and CLI repository scanner that flags vague product copy, fake production claims, weak errors, dead navigation, debug residue, browser-stored auth, and unfinished code evidence.">
+  <meta name="keywords" content="DeSlop, repo scanner, static analysis, code audit, AI code audit, repository audit, fake completeness scanner, slop detector, product copy checker, debug residue scanner, GitHub repo analyzer, CI quality gate, browser repo scanner">
+  <meta name="author" content="Bryan Leonard, TheArtOfSound">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow">
+  <meta name="bingbot" content="index, follow">
+  <meta name="theme-color" content="#0a0a0a">
   <link rel="canonical" href="https://deslop.imagineqira.com/">
+  <link rel="alternate" type="text/plain" href="https://deslop.imagineqira.com/llms.txt" title="DeSlop LLM summary">
+  <link rel="alternate" type="text/plain" href="https://deslop.imagineqira.com/llms-full.txt" title="DeSlop full LLM context">
+  <link rel="manifest" href="https://deslop.imagineqira.com/site.webmanifest">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DeSlop">
+  <meta property="og:title" content="DeSlop - Static Repo Scanner for Slop and Fake Completeness">
+  <meta property="og:description" content="Paste a public GitHub repo or run the CLI to find vague product copy, fake production claims, weak errors, dead navigation, debug residue, browser-stored auth, and unfinished code evidence.">
+  <meta property="og:url" content="https://deslop.imagineqira.com/">
+  <meta property="og:image" content="https://deslop.imagineqira.com/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DeSlop - Static Repo Scanner for Slop and Fake Completeness">
+  <meta name="twitter:description" content="Browser and CLI repo scanner for visible evidence that software is unwired, overclaimed, or unfinished.">
+  <meta name="twitter:image" content="https://deslop.imagineqira.com/og-image.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://deslop.imagineqira.com/#website",
+        "name": "DeSlop",
+        "url": "https://deslop.imagineqira.com/",
+        "description": "A public browser and CLI repository scanner for visible repo evidence that software is unwired, overclaimed, or unfinished.",
+        "inLanguage": "en-US",
+        "publisher": { "@id": "https://deslop.imagineqira.com/#person" }
+      },
+      {
+        "@type": ["SoftwareApplication", "WebApplication"],
+        "@id": "https://deslop.imagineqira.com/#software",
+        "name": "DeSlop",
+        "url": "https://deslop.imagineqira.com/",
+        "codeRepository": "https://github.com/TheArtOfSound/DeSlop",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web, macOS, Windows, Linux",
+        "description": "DeSlop scans public or local repositories for vague product copy, fake maturity claims, weak error messages, dead navigation targets, debug residue, browser-stored auth, and unfinished branch evidence.",
+        "softwareVersion": "0.1.0",
+        "isAccessibleForFree": true,
+        "license": "https://github.com/TheArtOfSound/DeSlop",
+        "creator": { "@id": "https://deslop.imagineqira.com/#person" },
+        "keywords": ["static analysis", "repo scanner", "GitHub analyzer", "code audit", "product copy audit", "CI quality gate", "AI code audit", "slop detector"]
+      },
+      {
+        "@type": "Person",
+        "@id": "https://deslop.imagineqira.com/#person",
+        "name": "Bryan Leonard",
+        "alternateName": "TheArtOfSound",
+        "url": "https://github.com/TheArtOfSound"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://deslop.imagineqira.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What does DeSlop scan for?",
+            "acceptedAnswer": { "@type": "Answer", "text": "DeSlop scans repositories for visible evidence such as vague product copy, fake production claims, weak error messages, dead navigation, debug residue, browser-stored auth, and unfinished code branches." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does DeSlop detect whether code was written by AI?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. DeSlop does not claim to identify who wrote code. It reports concrete repository evidence with file, line, matched text, reason, and fix direction." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can DeSlop run in CI?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. DeSlop can run from the CLI with npx and can be used as a GitHub Actions quality gate with score and severity thresholds." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
   <style>
     :root { color-scheme: dark; --bg:#0a0a0a; --panel:#101010; --panel2:#151515; --text:#f2f2f2; --muted:#a8a8a8; --line:#333333; --code:#dcdcdc; }
     * { box-sizing:border-box; }
@@ -18,6 +96,8 @@
     nav a { color:var(--muted); text-decoration:none; }
     main { padding:36px 0 52px; }
     section { margin-top:20px; }
+    ul { margin:0; padding-left:18px; color:var(--muted); }
+    li + li { margin-top:7px; }
     .brand { font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
     .hero { display:grid; grid-template-columns:minmax(0, 1fr) 420px; gap:20px; align-items:start; }
     .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:14px; }
@@ -25,10 +105,11 @@
     .panel { border:1px solid var(--line); background:var(--panel); padding:24px; }
     .tight { padding:18px; }
     .label { color:var(--muted); text-transform:uppercase; letter-spacing:.12em; font-size:12px; font-weight:700; margin-bottom:14px; }
-    h1 { margin:0; max-width:780px; font-size:48px; line-height:1.02; letter-spacing:-.045em; }
+    h1 { margin:0; max-width:820px; font-size:48px; line-height:1.02; letter-spacing:-.045em; }
     h2 { margin:0 0 12px; font-size:20px; }
+    h3 { margin:18px 0 8px; font-size:16px; }
     p { margin:0; color:var(--muted); }
-    .lead { margin-top:18px; max-width:760px; font-size:18px; color:#cfcfcf; }
+    .lead { margin-top:18px; max-width:780px; font-size:18px; color:#cfcfcf; }
     .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
     .button, button { border:1px solid var(--line); padding:10px 13px; background:var(--panel2); color:var(--text); text-decoration:none; font-weight:700; font-size:14px; cursor:pointer; }
     .primary { background:var(--text); color:#050505; border-color:var(--text); }
@@ -52,6 +133,8 @@
       <nav aria-label="Page links">
         <a href="#analyze">Analyze</a>
         <a href="#run">CLI</a>
+        <a href="#checks">Checks</a>
+        <a href="#faq">FAQ</a>
         <a href="#report">Report</a>
         <a href="#verify">Verify</a>
         <a href="https://github.com/TheArtOfSound/DeSlop">GitHub</a>
@@ -60,12 +143,13 @@
     <main>
       <section class="hero">
         <div class="panel">
-          <div class="label">Browser repo audit</div>
-          <h1>Paste a public GitHub repo. Get a DeSlop score.</h1>
-          <p class="lead">The browser pass fetches supported public files and returns concrete findings with file, line, matched text, reason, and fix direction.</p>
+          <div class="label">Static repo scanner</div>
+          <h1>Find fake completeness, vague product copy, and code residue before users do.</h1>
+          <p class="lead">DeSlop is a deterministic browser and CLI repository audit tool. It scans GitHub repos and local projects for concrete signals that software looks unwired, overclaimed, unfinished, or harder to trust.</p>
           <div class="actions">
             <a class="button primary" href="#analyze">Analyze a repo</a>
-            <a class="button" href="#run">CLI fallback</a>
+            <a class="button" href="#run">Run the CLI</a>
+            <a class="button" href="https://github.com/TheArtOfSound/DeSlop">View source</a>
           </div>
         </div>
         <div class="panel tight" id="run">
@@ -88,9 +172,41 @@ npx -y github:TheArtOfSound/DeSlop -- . --json</pre>
         <div id="findings"></div>
       </section>
       <section class="grid" id="scope">
-        <div class="panel tight"><h2>Inputs</h2><p>Markdown, text, JSON, HTML, CSS, JavaScript, TypeScript, JSX, and TSX files from a public GitHub repo.</p></div>
-        <div class="panel tight"><h2>Outputs</h2><p>Score, severity counts, exact match, file, line, reason, and fix direction.</p></div>
-        <div class="panel tight"><h2>Non-goal</h2><p>DeSlop does not decide whether code was written by a person or a model.</p></div>
+        <div class="panel tight"><h2>Inputs</h2><p>Markdown, text, JSON, HTML, CSS, JavaScript, TypeScript, JSX, and TSX files from a public GitHub repo or local CLI run.</p></div>
+        <div class="panel tight"><h2>Outputs</h2><p>Score, severity counts, exact match, file, line, reason, and fix direction for every finding.</p></div>
+        <div class="panel tight"><h2>Non-goal</h2><p>DeSlop does not decide whether code was written by a person or a model. It reports visible repo evidence.</p></div>
+      </section>
+      <section class="panel" id="checks">
+        <h2>What DeSlop checks</h2>
+        <div class="split">
+          <div>
+            <h3>Product trust signals</h3>
+            <ul>
+              <li>Fake maturity claims such as production-ready or enterprise-grade without proof.</li>
+              <li>Generic SaaS copy that could describe any app instead of the real workflow.</li>
+              <li>Weak error messages that give no cause, consequence, or next step.</li>
+              <li>Dead navigation targets that make a demo look more complete than it is.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Implementation residue</h3>
+            <ul>
+              <li>Unfinished branches and stubbed code paths.</li>
+              <li>Browser-stored auth-like secrets such as passwords, sessions, tokens, or API keys.</li>
+              <li>Debug output left outside docs or visible code examples.</li>
+              <li>Unresolved work markers that should become issues, tests, or named non-goals.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <section class="panel" id="faq">
+        <h2>FAQ</h2>
+        <h3>What does DeSlop scan for?</h3>
+        <p>DeSlop scans repositories for visible evidence such as vague product copy, fake production claims, weak error messages, dead navigation, debug residue, browser-stored auth, and unfinished code branches.</p>
+        <h3>Does DeSlop detect whether code was written by AI?</h3>
+        <p>No. DeSlop does not claim to identify who wrote code. It reports concrete repository evidence with file, line, matched text, reason, and fix direction.</p>
+        <h3>Can DeSlop run in CI?</h3>
+        <p>Yes. DeSlop can run from the CLI with npx and can be used as a GitHub Actions quality gate with score and severity thresholds.</p>
       </section>
       <section class="panel" id="report">
         <h2>Report contract</h2>
