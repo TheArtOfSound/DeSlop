@@ -40,6 +40,14 @@ const checks = [
   },
   ...sourceChecks,
   {
+    file: "USAGE.md",
+    includes: [
+      "# Using DeSlop",
+      "npx -y github:TheArtOfSound/DeSlop -- .",
+      "GitHub Actions"
+    ]
+  },
+  {
     file: "robots.txt",
     includes: ["Sitemap: https://theartofsound.github.io/DeSlop/sitemap.xml"]
   },
