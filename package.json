@@ -8,7 +8,8 @@
     "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.json",
     "check": "npm run clean && npm run build && node --test \"dist/**/*.test.js\"",
-    "audit": "npm run build && node dist/cli.js"
+    "audit": "npm run build && node dist/cli.js",
+    "verify:page": "node scripts/verify-public-page.mjs"
   },
   "bin": {
     "deslop": "dist/cli.js"
