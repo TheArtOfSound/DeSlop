@@ -21,6 +21,12 @@ const checks = [
       "Report contract",
       "Verification",
       "Deploy runs"
+    ],
+    excludes: [
+      "border-radius",
+      "linear-gradient",
+      "radial-gradient",
+      "box-shadow"
     ]
   },
   ...sourceChecks,
@@ -58,6 +64,11 @@ for (const check of checks) {
   for (const expected of check.includes) {
     if (!text.includes(expected)) {
       throw new Error(`${filePath} is missing expected text: ${expected}`);
+    }
+  }
+  for (const forbidden of check.excludes ?? []) {
+    if (text.includes(forbidden)) {
+      throw new Error(`${filePath} contains forbidden public-page styling: ${forbidden}`);
     }
   }
 }
