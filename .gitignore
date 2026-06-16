@@ -1,4 +1,5 @@
 dist/
+dist-page/
 node_modules/
 coverage/
 .env
