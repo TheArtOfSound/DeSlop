@@ -30,6 +30,7 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
         if (match.index === undefined) continue;
         const excerpt = getLine(file.content, match.index).trim();
         if (excerpt.includes(ignoreLineMarker)) continue;
+        if (shouldSuppressFinding(file.path, rule.id)) continue;
 
         const location = getLocation(lineStarts, match.index);
         const seenKey = `${rule.id}:${location.line}`;
@@ -68,6 +69,12 @@ export function analyzeFiles(files: FileInput[]): AuditReport {
     summary: summarize(filesScanned, findings),
     findings
   };
+}
+
+function shouldSuppressFinding(filePath: string, ruleId: string): boolean {
+  const normalized = filePath.toLowerCase();
+  const isDoc = normalized.endsWith(".md") || normalized.endsWith(".mdx");
+  return isDoc && ruleId === "debug-log-leftover";
 }
 
 function summarize(filesScanned: number, findings: Finding[]): AuditSummary {
