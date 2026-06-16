@@ -2,7 +2,49 @@
 
 DeSlop scans a repo for wording and code residue that makes generated software feel fake: placeholders, vague product copy, fake maturity claims, weak error messages, fake async behavior, dead navigation, browser-only permission state, syntax-comments, and unresolved work markers.
 
-The first version is a command line audit. It does not pretend to judge whether code was written by a person or a model. It judges whether the repo contains signals that make the product look unwired, overclaimed, or unfinished.
+It does not pretend to judge whether code was written by a person or a model. It judges whether the repo contains signals that make the product look unwired, overclaimed, or unfinished.
+
+## Fastest use
+
+From inside any repo you want to check:
+
+```bash
+npx -y github:TheArtOfSound/DeSlop -- .
+```
+
+Fail if the repo scores below 90:
+
+```bash
+npx -y github:TheArtOfSound/DeSlop -- . --min-score 90
+```
+
+Return JSON:
+
+```bash
+npx -y github:TheArtOfSound/DeSlop -- . --json
+```
+
+## Use in GitHub Actions
+
+Create `.github/workflows/deslop.yml` in the repo you want to check:
+
+```yaml
+name: DeSlop
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  deslop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: TheArtOfSound/DeSlop@main
+        with:
+          path: .
+          min-score: "90"
+```
 
 ## Current audit scope
 
@@ -55,11 +97,12 @@ npm run build:page
 npm run verify:page:dist
 ```
 
-## Run it
+## Local development
 
 ```bash
 npm install
 npm run audit -- .
+npm run check
 ```
 
 Scan a specific path:
@@ -68,22 +111,10 @@ Scan a specific path:
 npm run audit -- README.md
 ```
 
-Return JSON:
-
-```bash
-npm run audit -- . --json
-```
-
 Fail when high-severity findings exist:
 
 ```bash
 npm run audit -- . --fail-on high
-```
-
-Fail when the score is below a threshold:
-
-```bash
-npm run audit -- . --min-score 90
 ```
 
 Limit the largest file DeSlop will read:
@@ -99,12 +130,6 @@ JSON reports include `schemaVersion: 1`, summary counts, category counts, and ex
 ## Scan limits
 
 By default, DeSlop skips supported files larger than 1,000,000 bytes. Use `--max-file-bytes` to lower or raise that limit for CI and large repos.
-
-## Development checks
-
-```bash
-npm run check
-```
 
 ## File-level ignores
 
