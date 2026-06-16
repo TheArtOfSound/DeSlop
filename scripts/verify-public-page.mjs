@@ -25,6 +25,14 @@ const checks = [
   {
     file: "sitemap.xml",
     includes: ["<loc>https://theartofsound.github.io/DeSlop/</loc>"]
+  },
+  {
+    file: "llms.txt",
+    includes: [
+      "# DeSlop",
+      "Public page: https://theartofsound.github.io/DeSlop/",
+      "schemaVersion: 1"
+    ]
   }
 ];
 
