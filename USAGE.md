@@ -9,7 +9,7 @@ It looks for visible signs that a project is not really wired yet: vague copy, p
 Open:
 
 ```txt
-https://theartofsound.github.io/DeSlop/
+https://deslop.imagineqira.com/
 ```
 
 Paste a public GitHub repo URL and click Analyze.
