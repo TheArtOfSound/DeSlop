@@ -1,0 +1,8 @@
+DeSlop
+
+Site: https://deslop.imagineqira.com/
+Repository: https://github.com/TheArtOfSound/DeSlop
+Creator: Bryan Leonard / TheArtOfSound
+Purpose: Static repository scanner for visible signs of vague product copy, fake completeness, weak errors, debug residue, browser-side auth storage, and unfinished implementation evidence.
+
+DeSlop is a pressure gauge, not a truth score.
