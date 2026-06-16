@@ -30,8 +30,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Verify public page files
+      - name: Verify public page source
         run: npm run verify:page
+
+      - name: Build public page artifact
+        run: npm run build:page
+
+      - name: Verify public page artifact
+        run: npm run verify:page:dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -39,7 +45,7 @@ jobs:
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist-page
 
       - name: Deploy to GitHub Pages
         id: deployment
