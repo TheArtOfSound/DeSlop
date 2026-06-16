@@ -17,8 +17,8 @@
     "deslop": "dist/cli.js"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "typescript": "latest"
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=20"
