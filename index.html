@@ -36,6 +36,8 @@
     .tile { border:1px solid var(--line); border-radius:22px; background:var(--panel); padding:22px; }
     .tile h2 { margin:0 0 10px; font-size:18px; }
     .tile p, li { color:var(--muted); line-height:1.55; }
+    .checklist { margin:14px 0 0; padding:0; list-style:none; }
+    .checklist li { border-top:1px solid var(--line); padding:12px 0; }
     footer { margin-top:30px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
     @media (max-width:800px) { header, .hero { grid-template-columns:1fr; } header { align-items:flex-start; flex-direction:column; } .grid { grid-template-columns:1fr; } }
   </style>
@@ -48,6 +50,7 @@
         <a href="#run">Run</a>
         <a href="#scope">Scope</a>
         <a href="#report">Report</a>
+        <a href="#verify">Verify</a>
         <a href="https://github.com/TheArtOfSound/DeSlop">GitHub</a>
       </nav>
     </header>
@@ -60,6 +63,7 @@
           <div class="buttons">
             <a class="button primary" href="https://github.com/TheArtOfSound/DeSlop">View repo</a>
             <a class="button" href="#run">Read commands</a>
+            <a class="button" href="https://github.com/TheArtOfSound/DeSlop/actions/workflows/pages.yml">Deploy runs</a>
           </div>
         </div>
         <div class="card" id="run">
@@ -89,6 +93,17 @@ npm run audit -- . --max-file-bytes 250000</pre>
   },
   "findings": []
 }</pre>
+      </section>
+
+      <section class="card" id="verify" style="margin-top:18px">
+        <h2>Verification</h2>
+        <p class="lead">This page is static HTML committed to the public repo. The Pages deployment uses GitHub Actions.</p>
+        <ul class="checklist">
+          <li>Public page file: <code>index.html</code></li>
+          <li>Deploy workflow: <code>.github/workflows/pages.yml</code></li>
+          <li>Static serving marker: <code>.nojekyll</code></li>
+          <li>Crawler files: <code>robots.txt</code> and <code>sitemap.xml</code></li>
+        </ul>
       </section>
     </main>
 
