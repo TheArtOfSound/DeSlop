@@ -94,6 +94,49 @@ const benchmarkCases: BenchmarkCase[] = [
     expected: { high: 0, medium: 0, low: 0, categories: {} }
   },
   {
+    name: "markdown code examples can use console logging",
+    files: [
+      {
+        path: "clients/js/README.md",
+        content: [
+          "```js",
+          join(["console.", "log(result)"]),
+          "```"
+        ].join("\n")
+      }
+    ],
+    expected: { high: 0, medium: 0, low: 0, categories: {} }
+  },
+  {
+    name: "preference storage is not auth storage",
+    files: [
+      {
+        path: "src/settings.ts",
+        content: [
+          join(["local", "Storage.setItem('lolm_dataset', selected)"]),
+          join(["local", "Storage.setItem('lolm_tokenizer', tokenizer)"])
+        ].join("\n")
+      }
+    ],
+    expected: { high: 0, medium: 0, low: 0, categories: {} }
+  },
+  {
+    name: "password storage is auth storage",
+    files: [
+      {
+        path: "src/auth.ts",
+        content: join(["local", "Storage.setItem('lolm_password', password)"])
+      }
+    ],
+    expected: {
+      high: 1,
+      medium: 0,
+      low: 0,
+      categories: { security: 1 },
+      ruleIds: ["client-only-auth-storage"]
+    }
+  },
+  {
     name: "unimplemented backend branch",
     files: [
       {
