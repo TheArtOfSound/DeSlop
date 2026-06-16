@@ -4,7 +4,17 @@ DeSlop scans a repo for wording and code residue that makes generated software f
 
 It does not pretend to judge whether code was written by a person or a model. It judges whether the repo contains signals that make the product look unwired, overclaimed, or unfinished.
 
-## Fastest use
+## Fastest use: browser UI
+
+Open the public page, paste a public GitHub repo URL, and click Analyze:
+
+```txt
+https://theartofsound.github.io/DeSlop/
+```
+
+Browser mode is best for a quick first pass on public repos. It scans capped public files directly from GitHub and shows score, severity counts, files, lines, matched text, reasons, and fix direction.
+
+## CLI use
 
 From inside any repo you want to check:
 
