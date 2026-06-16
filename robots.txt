@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://theartofsound.github.io/DeSlop/sitemap.xml
