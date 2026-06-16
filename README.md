@@ -22,7 +22,7 @@ DeSlop flags:
 
 ## Public index
 
-The repo includes a static `index.html` landing page and a GitHub Actions Pages workflow.
+The repo includes a static `index.html` landing page and a GitHub Actions Pages workflow. The workflow verifies source files, builds `dist-page`, verifies the artifact, then deploys only that artifact folder.
 
 Open it locally:
 
@@ -46,6 +46,13 @@ Verify the committed public page files:
 
 ```bash
 npm run verify:page
+```
+
+Build and verify the deploy artifact:
+
+```bash
+npm run build:page
+npm run verify:page:dist
 ```
 
 ## Run it
