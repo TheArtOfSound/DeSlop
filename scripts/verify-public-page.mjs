@@ -27,15 +27,25 @@ const checks = [
     file: "index.html",
     includes: [
       "https://theartofsound.github.io/DeSlop/",
+      "Analyze public repo",
+      "browser-analyzer.js",
       "Report contract",
-      "Verification",
-      "Deploy runs"
+      "Verification"
     ],
     excludes: [
       "border-radius",
       "linear-gradient",
       "radial-gradient",
       "box-shadow"
+    ]
+  },
+  {
+    file: "browser-analyzer.js",
+    includes: [
+      "raw.githubusercontent.com",
+      "fetchRawText",
+      "GitHub rate limited",
+      "copyCommandButton"
     ]
   },
   ...sourceChecks,
