@@ -3,43 +3,52 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DeSlop — repo audits for unwired software</title>
-  <meta name="description" content="DeSlop scans repos for vague copy, weak errors, dead navigation, debug residue, and overclaimed behavior.">
+  <title>DeSlop — repo audit CLI</title>
+  <meta name="description" content="DeSlop is a command line scanner for vague copy, weak errors, dead navigation, debug residue, and overclaimed behavior.">
   <link rel="canonical" href="https://theartofsound.github.io/DeSlop/">
-  <meta name="theme-color" content="#070707">
+  <meta name="theme-color" content="#0a0a0a">
   <meta property="og:type" content="website">
   <meta property="og:title" content="DeSlop">
-  <meta property="og:description" content="Repo audits for vague copy, dead navigation, debug residue, browser-only trust state, and claims without evidence.">
+  <meta property="og:description" content="Command line repo audit for vague copy, dead navigation, debug residue, browser-only trust state, and claims without evidence.">
   <meta property="og:url" content="https://theartofsound.github.io/DeSlop/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="DeSlop">
-  <meta name="twitter:description" content="A repo scanner for software that looks finished before the core behavior is wired.">
+  <meta name="twitter:description" content="A command line scanner for visible repo evidence.">
   <style>
-    :root { color-scheme: dark; --bg:#070707; --panel:#121212; --text:#f6f6f0; --muted:#b8b8ad; --line:#2a2a2a; --accent:#fff; }
-    * { box-sizing: border-box; }
-    body { margin:0; min-height:100vh; background:radial-gradient(circle at 20% 10%, rgba(255,255,255,.12), transparent 360px), var(--bg); color:var(--text); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .wrap { width:min(1080px, calc(100% - 32px)); margin:0 auto; padding:32px 0 56px; }
-    header { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:12px 0 48px; }
-    .brand { font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+    :root { color-scheme: dark; --bg:#0a0a0a; --panel:#101010; --panel2:#151515; --text:#f2f2f2; --muted:#a8a8a8; --line:#333333; --code:#dcdcdc; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size:16px; line-height:1.5; }
+    a { color:var(--text); text-decoration:underline; text-underline-offset:3px; }
+    code, pre { font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .wrap { width:min(1120px, calc(100% - 32px)); margin:0 auto; }
+    header { border-bottom:1px solid var(--line); padding:18px 0; display:flex; justify-content:space-between; gap:20px; align-items:center; }
+    .brand { font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
     nav { display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-size:14px; }
-    a { color:inherit; text-decoration:none; }
-    a:hover { color:var(--text); }
-    .hero { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; align-items:stretch; }
-    .card { border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)); border-radius:28px; padding:clamp(24px, 5vw, 56px); }
-    h1 { margin:0; font-size:clamp(52px, 9vw, 112px); line-height:.86; letter-spacing:-.08em; }
-    .lead { color:var(--muted); font-size:clamp(18px, 2.2vw, 24px); line-height:1.38; max-width:720px; margin:26px 0 0; }
-    .buttons { display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
-    .button { border:1px solid var(--accent); border-radius:999px; padding:13px 18px; font-weight:800; }
-    .button.primary { background:var(--text); color:#050505; }
-    pre { margin:0; white-space:pre-wrap; font:14px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color:#ededdf; }
-    .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:18px; }
-    .tile { border:1px solid var(--line); border-radius:22px; background:var(--panel); padding:22px; }
-    .tile h2 { margin:0 0 10px; font-size:18px; }
-    .tile p, li { color:var(--muted); line-height:1.55; }
-    .checklist { margin:14px 0 0; padding:0; list-style:none; }
-    .checklist li { border-top:1px solid var(--line); padding:12px 0; }
-    footer { margin-top:30px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-    @media (max-width:800px) { header, .hero { grid-template-columns:1fr; } header { align-items:flex-start; flex-direction:column; } .grid { grid-template-columns:1fr; } }
+    nav a { color:var(--muted); text-decoration:none; }
+    nav a:hover { color:var(--text); }
+    main { padding:36px 0 52px; }
+    .hero { display:grid; grid-template-columns:minmax(0, 1fr) 420px; gap:20px; align-items:start; }
+    .panel { border:1px solid var(--line); background:var(--panel); padding:24px; }
+    .panel.tight { padding:18px; }
+    .label { color:var(--muted); text-transform:uppercase; letter-spacing:.12em; font-size:12px; font-weight:700; margin-bottom:14px; }
+    h1 { margin:0; max-width:780px; font-size:48px; line-height:1.02; letter-spacing:-.045em; font-weight:800; }
+    h2 { margin:0 0 12px; font-size:20px; letter-spacing:-.02em; }
+    p { margin:0; color:var(--muted); }
+    .lead { margin-top:18px; max-width:760px; font-size:18px; color:#cfcfcf; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+    .button { display:inline-block; border:1px solid var(--line); padding:10px 13px; background:var(--panel2); color:var(--text); text-decoration:none; font-weight:700; font-size:14px; }
+    .button.primary { background:var(--text); color:#050505; border-color:var(--text); }
+    pre { margin:0; overflow:auto; color:var(--code); font-size:13px; line-height:1.55; white-space:pre-wrap; }
+    .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:14px; }
+    section { margin-top:20px; }
+    .table { width:100%; border-collapse:collapse; color:var(--muted); }
+    .table th, .table td { border-top:1px solid var(--line); text-align:left; padding:11px 0; vertical-align:top; }
+    .table th { color:var(--text); font-weight:700; width:180px; }
+    .checklist { margin:0; padding:0; list-style:none; color:var(--muted); }
+    .checklist li { border-top:1px solid var(--line); padding:10px 0; }
+    footer { border-top:1px solid var(--line); padding:18px 0 30px; color:var(--muted); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-size:14px; }
+    @media (max-width:860px) { header, .hero { display:block; } nav { margin-top:14px; } .hero > * + * { margin-top:14px; } .grid { grid-template-columns:1fr; } h1 { font-size:38px; } }
   </style>
 </head>
 <body>
@@ -57,32 +66,36 @@
 
     <main>
       <section class="hero">
-        <div class="card">
-          <h1>Repo audits for software that feels unwired.</h1>
-          <p class="lead">DeSlop scans product copy and source files for concrete signals: vague wording, weak errors, dead navigation, debug residue, browser-only trust state, and claims without evidence.</p>
-          <div class="buttons">
-            <a class="button primary" href="https://github.com/TheArtOfSound/DeSlop">View repo</a>
-            <a class="button" href="#run">Read commands</a>
+        <div class="panel">
+          <div class="label">Command line repo audit</div>
+          <h1>Find vague copy and fake-complete residue before review.</h1>
+          <p class="lead">DeSlop checks product copy and source files for concrete evidence: weak errors, dead navigation, debug output, browser-only trust state, unfinished branches, and claims without evidence.</p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/TheArtOfSound/DeSlop">Repository</a>
             <a class="button" href="https://github.com/TheArtOfSound/DeSlop/actions/workflows/pages.yml">Deploy runs</a>
+            <a class="button" href="#run">Commands</a>
           </div>
         </div>
-        <div class="card" id="run">
+
+        <div class="panel tight" id="run">
+          <div class="label">Run</div>
           <pre>npm install
 npm run audit -- .
 npm run audit -- . --json
 npm run audit -- . --fail-on high
 npm run audit -- . --min-score 90
-npm run audit -- . --max-file-bytes 250000</pre>
+npm run audit -- . --max-file-bytes 250000
+npm run verify:page</pre>
         </div>
       </section>
 
       <section class="grid" id="scope">
-        <div class="tile"><h2>What it checks</h2><p>Copy, UX, implementation, security, and release hygiene findings with file, line, matched text, reason, and fix direction.</p></div>
-        <div class="tile"><h2>What it avoids</h2><p>It does not claim who wrote the code. It scores visible repo evidence and keeps findings specific.</p></div>
-        <div class="tile"><h2>Why it exists</h2><p>Repos can look finished before the core behavior is wired. DeSlop catches that residue earlier.</p></div>
+        <div class="panel tight"><h2>Inputs</h2><p>Markdown, text, JSON, HTML, CSS, JavaScript, TypeScript, JSX, and TSX files under the scan path.</p></div>
+        <div class="panel tight"><h2>Outputs</h2><p>Text or JSON reports with score, category counts, exact match, line, reason, and fix direction.</p></div>
+        <div class="panel tight"><h2>Non-goal</h2><p>DeSlop does not decide whether code was written by a person or a model. It reports visible repo evidence.</p></div>
       </section>
 
-      <section class="card" id="report" style="margin-top:18px">
+      <section class="panel" id="report">
         <h2>Report contract</h2>
         <pre>{
   "schemaVersion": 1,
@@ -95,16 +108,15 @@ npm run audit -- . --max-file-bytes 250000</pre>
 }</pre>
       </section>
 
-      <section class="card" id="verify" style="margin-top:18px">
+      <section class="panel" id="verify">
         <h2>Verification</h2>
-        <p class="lead">This page is static HTML committed to the public repo. The Pages deployment runs <code>npm run verify:page</code> before upload.</p>
-        <ul class="checklist">
-          <li>Public page file: <code>index.html</code></li>
-          <li>Pre-deploy verifier: <code>scripts/verify-public-page.mjs</code></li>
-          <li>Deploy workflow: <code>.github/workflows/pages.yml</code></li>
-          <li>Static serving marker: <code>.nojekyll</code></li>
-          <li>Crawler files: <code>robots.txt</code>, <code>sitemap.xml</code>, and <code>llms.txt</code></li>
-        </ul>
+        <table class="table">
+          <tr><th>Page source</th><td><code>index.html</code></td></tr>
+          <tr><th>Pre-deploy check</th><td><code>npm run verify:page</code></td></tr>
+          <tr><th>Workflow</th><td><code>.github/workflows/pages.yml</code></td></tr>
+          <tr><th>Static marker</th><td><code>.nojekyll</code></td></tr>
+          <tr><th>Crawler files</th><td><code>robots.txt</code>, <code>sitemap.xml</code>, <code>llms.txt</code></td></tr>
+        </table>
       </section>
     </main>
 
