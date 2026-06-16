@@ -5,6 +5,7 @@ const maxBytes = 250000;
 const weights = { high: 8, medium: 4, low: 1 };
 const ignoreFileMarker = "deslop:ignore-file";
 const ignoreLineMarker = "deslop:ignore-line";
+const fallbackBranches = ["main", "master", "gh-pages"];
 
 const authStoragePattern = /\b(localStorage|sessionStorage)\.(getItem|setItem)\s*\(\s*["'`](?:[a-z0-9]+[-_])*(?:token|auth|jwt|session|user|role|password|apikey|api_key|api-key|secret)(?:[-_][a-z0-9]+)*["'`]/gi;
 const ruleData = [
@@ -92,20 +93,70 @@ function scanFile(file) {
   return findings;
 }
 
-async function fetchJson(url) {
+async function fetchJson(url, options = {}) {
   const response = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
-  if (response.status === 403) throw new Error("GitHub rate limited the browser metadata request. Use Copy CLI command or retry later.");
+  if (response.status === 403) throw new Error(options.rateLimitMessage || "GitHub API rate limited this browser request.");
   if (!response.ok) throw new Error(`GitHub API returned ${response.status} for ${url}`);
   return response.json();
 }
 
-async function fetchRawText(owner, repo, branch, path) {
-  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-  const url = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(branch)}/${encodedPath}`;
+async function fetchText(url) {
   const response = await fetch(url);
-  if (response.status === 403) throw new Error("GitHub rate limited raw file reads from the browser. Use Copy CLI command or retry later.");
   if (!response.ok) return null;
   return response.text();
+}
+
+async function getGitHubCandidates(owner, repo) {
+  const meta = await fetchJson(`https://api.github.com/repos/${owner}/${repo}`, {
+    rateLimitMessage: "GitHub API rate limited metadata. Trying public CDN fallback."
+  });
+  const branch = meta.default_branch;
+  const tree = await fetchJson(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`, {
+    rateLimitMessage: "GitHub API rate limited file tree. Trying public CDN fallback."
+  });
+  const candidates = tree.tree
+    .filter((item) => item.type === "blob" && supportedExtensions.has(extensionOf(item.path)) && item.size <= maxBytes)
+    .slice(0, maxFiles)
+    .map((item) => ({ path: item.path, size: item.size, source: "github", branch }));
+  return { branch, source: "GitHub API", candidates };
+}
+
+async function getCdnCandidates(owner, repo) {
+  let lastStatus = "";
+  for (const branch of fallbackBranches) {
+    const url = `https://data.jsdelivr.com/v1/package/gh/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}@${encodeURIComponent(branch)}/flat`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      lastStatus = `${response.status} for ${branch}`;
+      continue;
+    }
+    const payload = await response.json();
+    const files = Array.isArray(payload.files) ? payload.files : [];
+    const candidates = files
+      .map((file) => ({ path: String(file.name || "").replace(/^\//, ""), size: Number(file.size || 0), source: "cdn", branch }))
+      .filter((item) => item.path && supportedExtensions.has(extensionOf(item.path)) && item.size <= maxBytes)
+      .slice(0, maxFiles);
+    if (candidates.length) return { branch, source: "jsDelivr CDN", candidates };
+    lastStatus = `no supported files for ${branch}`;
+  }
+  throw new Error(`Browser fallback could not list this repo through jsDelivr (${lastStatus}). Use Copy CLI command.`);
+}
+
+async function getCandidates(owner, repo) {
+  try {
+    return await getGitHubCandidates(owner, repo);
+  } catch (error) {
+    statusText.textContent = error instanceof Error ? error.message : "GitHub API unavailable. Trying public CDN fallback.";
+    return getCdnCandidates(owner, repo);
+  }
+}
+
+async function fetchFileText(owner, repo, item) {
+  const encodedPath = item.path.split("/").map(encodeURIComponent).join("/");
+  if (item.source === "cdn") {
+    return fetchText(`https://cdn.jsdelivr.net/gh/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}@${encodeURIComponent(item.branch)}/${encodedPath}`);
+  }
+  return fetchText(`https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(item.branch)}/${encodedPath}`);
 }
 
 async function analyzeRepo() {
@@ -114,18 +165,14 @@ async function analyzeRepo() {
   findingsBox.innerHTML = "";
   try {
     const { owner, repo } = parseRepo(repoInput.value);
-    statusText.textContent = `Reading ${owner}/${repo} metadata.`;
-    const meta = await fetchJson(`https://api.github.com/repos/${owner}/${repo}`);
-    const branch = meta.default_branch;
-    statusText.textContent = `Reading file tree from ${branch}.`;
-    const tree = await fetchJson(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
-    const candidates = tree.tree.filter((item) => item.type === "blob" && supportedExtensions.has(extensionOf(item.path)) && item.size <= maxBytes).slice(0, maxFiles);
+    statusText.textContent = `Reading ${owner}/${repo} file list.`;
+    const { branch, source, candidates } = await getCandidates(owner, repo);
     const files = [];
     let skipped = 0;
     for (let index = 0; index < candidates.length; index += 1) {
       const item = candidates[index];
-      statusText.textContent = `Reading ${index + 1}/${candidates.length}: ${item.path}`;
-      const text = await fetchRawText(owner, repo, branch, item.path);
+      statusText.textContent = `Reading ${index + 1}/${candidates.length} from ${source}: ${item.path}`;
+      const text = await fetchFileText(owner, repo, item);
       if (typeof text === "string") files.push({ path: item.path, text });
       else skipped += 1;
     }
@@ -134,8 +181,8 @@ async function analyzeRepo() {
     const medium = findings.filter((item) => item.severity === "medium").length;
     const low = findings.filter((item) => item.severity === "low").length;
     const score = Math.max(0, 100 - high * weights.high - medium * weights.medium - low * weights.low);
-    statusText.textContent = `Complete. Scanned ${files.length} files from ${owner}/${repo}. Skipped ${skipped}.`;
-    summary.innerHTML = `<div class="split"><div class="panel tight"><h2>Score ${score}/100</h2><p>${findings.length} findings. High ${high}, medium ${medium}, low ${low}.</p></div><div class="panel tight"><h2>Files ${files.length}</h2><p>Browser mode scanned public raw files under ${maxBytes} bytes. Use the CLI for local, private, or very large repos.</p></div></div>`;
+    statusText.textContent = `Complete. Scanned ${files.length} files from ${owner}/${repo} (${source}, ${branch}). Skipped ${skipped}.`;
+    summary.innerHTML = `<div class="split"><div class="panel tight"><h2>Score ${score}/100</h2><p>${findings.length} findings. High ${high}, medium ${medium}, low ${low}.</p></div><div class="panel tight"><h2>Files ${files.length}</h2><p>Browser mode scanned public raw files under ${maxBytes} bytes. It falls back to jsDelivr when GitHub API is rate limited. Use the CLI for local, private, or very large repos.</p></div></div>`;
     findingsBox.innerHTML = findings.length ? findings.map((item) => `<div class="result"><strong>${escapeHtml(item.severity.toUpperCase())} · ${escapeHtml(item.label)}</strong><br><code>${escapeHtml(item.file)}:${item.line}</code><br><span>${escapeHtml(item.matchedText)}</span><p>${escapeHtml(item.reason)} ${escapeHtml(item.fix)}</p></div>`).join("") : `<div class="result"><strong>No findings from browser rules.</strong><p>Use the CLI for the full local pass.</p></div>`;
   } catch (error) {
     statusText.textContent = error instanceof Error ? error.message : "The browser audit stopped before completion.";
