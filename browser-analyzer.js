@@ -94,7 +94,8 @@ function scanFile(file) {
 }
 
 async function fetchJson(url, options = {}) {
-  const response = await fetch(url, { cache: "no-store", headers: { Accept: "application/vnd.github+json", "Cache-Control": "no-cache" } });
+  const separator = url.includes("?") ? "&" : "?";
+  const response = await fetch(`${url}${separator}deslop_cache_bust=${Date.now()}`, { cache: "no-store" });
   if (response.status === 403) throw new Error(options.rateLimitMessage || "GitHub API rate limited this browser request.");
   if (!response.ok) throw new Error(`GitHub API returned ${response.status} for ${url}`);
   return response.json();
@@ -103,7 +104,7 @@ async function fetchJson(url, options = {}) {
 async function fetchText(url) {
   const separator = url.includes("?") ? "&" : "?";
   const cacheBustedUrl = `${url}${separator}deslop_cache_bust=${Date.now()}`;
-  const response = await fetch(cacheBustedUrl, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
+  const response = await fetch(cacheBustedUrl, { cache: "no-store" });
   if (!response.ok) return null;
   return response.text();
 }
@@ -127,7 +128,7 @@ async function getCdnCandidates(owner, repo) {
   let lastStatus = "";
   for (const branch of fallbackBranches) {
     const url = `https://data.jsdelivr.com/v1/package/gh/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}@${encodeURIComponent(branch)}/flat`;
-    const response = await fetch(`${url}?deslop_cache_bust=${Date.now()}`, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
+    const response = await fetch(`${url}?deslop_cache_bust=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) {
       lastStatus = `${response.status} for ${branch}`;
       continue;
