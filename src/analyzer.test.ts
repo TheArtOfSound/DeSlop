@@ -63,6 +63,24 @@ test("deduplicates overlapping matches from the same rule on one line", () => {
   assert.equal(report.findings.length, 1);
 });
 
+test("flags only empty navigation targets, not valid in-page anchors", () => {
+  const report = analyzeFiles([
+    {
+      path: "index.html",
+      content: [
+        "<a href=\"#analyze\">Analyze</a>",
+        "<a href=\"#run\">CLI</a>",
+        "<a href=\"#\">Dead</a>",
+        "<a href=\"javascript:void(0)\">Also dead</a>"
+      ].join("\n")
+    }
+  ]);
+
+  const deadNav = report.findings.filter((finding) => finding.ruleId === "dead-navigation-target");
+  assert.equal(deadNav.length, 2);
+  assert.equal(deadNav.every((finding) => finding.line >= 3), true);
+});
+
 test("honors the file-level ignore marker", () => {
   const report = analyzeFiles([
     {

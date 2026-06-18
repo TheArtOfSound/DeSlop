@@ -99,7 +99,7 @@ const baseRules = [
     label: "Dead navigation target",
     severity: "medium",
     category: "implementation",
-    pattern: /\b(href|to)=\{?["'`](#|javascript:void\(0\)|todo|coming-soon)["'`]?\}?/gi,
+    pattern: /\b(href|to)=\{?(["'`])(#|javascript:void\(0\)|todo|coming-soon)\2\}?/gi,
     reason: "A visible navigation element points nowhere, which is a direct fake-completeness signal.",
     replacementHint: "Remove the control, wire the destination, or show a disabled state with a concrete reason."
   },

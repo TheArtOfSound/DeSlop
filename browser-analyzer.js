@@ -18,12 +18,22 @@ const ruleData = [
   ["unfinished-branch", "Unfinished branch", "high", "implementation", ["not" + " implemented", "throw new Error(\"" + "stub\"", "throw new Error('" + "stub'"], "The code can reach a branch that admits the product is unfinished.", "Implement the branch, remove the route, or fail earlier with a precise constraint."]
 ];
 
+const categoryLabels = { copy: "copy", ux: "ux", implementation: "impl", security: "security", "release-hygiene": "hygiene" };
+
 const repoInput = document.getElementById("repoInput");
 const analyzeButton = document.getElementById("analyzeButton");
 const copyCommandButton = document.getElementById("copyCommandButton");
 const statusText = document.getElementById("statusText");
 const summary = document.getElementById("summary");
+const controls = document.getElementById("controls");
 const findingsBox = document.getElementById("findings");
+
+let lastResult = null;
+let activeFilter = "all";
+
+function setStatus(message) {
+  statusText.innerHTML = `<span class="dot"></span>${escapeHtml(message)}`;
+}
 
 function parseRepo(value) {
   const trimmed = value.trim();
@@ -149,7 +159,7 @@ async function getCandidates(owner, repo) {
   try {
     return await getGitHubCandidates(owner, repo);
   } catch (error) {
-    statusText.textContent = error instanceof Error ? error.message : "GitHub API unavailable. Trying public CDN fallback.";
+    setStatus(error instanceof Error ? error.message : "GitHub API unavailable. Trying public CDN fallback.");
     return getCdnCandidates(owner, repo);
   }
 }
@@ -162,33 +172,203 @@ async function fetchFileText(owner, repo, item) {
   return fetchText(`https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(item.branch)}/${encodedPath}`);
 }
 
+function verdictFor(score) {
+  if (score >= 90) return "clean pass";
+  if (score >= 70) return "review";
+  if (score >= 40) return "pressure";
+  return "heavy slop";
+}
+
+function severityColor(score) {
+  if (score >= 90) return "var(--accent)";
+  if (score >= 70) return "var(--med)";
+  return "var(--high)";
+}
+
+function animateScore(target) {
+  const numEl = document.getElementById("scoreNum");
+  const fillEl = document.getElementById("scoreFill");
+  if (!numEl || !fillEl) return;
+  const color = severityColor(target);
+  numEl.style.color = color;
+  const start = performance.now();
+  const duration = 900;
+  function step(now) {
+    const progress = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    numEl.textContent = String(Math.round(eased * target));
+    if (progress < 1) requestAnimationFrame(step);
+    else numEl.textContent = String(target);
+  }
+  requestAnimationFrame(step);
+  requestAnimationFrame(() => { fillEl.style.width = `${target}%`; fillEl.style.background = color; });
+}
+
+function renderSummary(result) {
+  const { score, high, medium, low, findings, files, source, branch, owner, repo } = result;
+  summary.innerHTML = `
+    <div class="summary">
+      <div class="cell">
+        <div class="scoreline">
+          <span class="score-num mono" id="scoreNum">0</span>
+          <span class="score-den">/100</span>
+          <span class="score-verdict" style="color:${severityColor(score)};border-color:${severityColor(score)};">${escapeHtml(verdictFor(score))}</span>
+        </div>
+        <div class="track"><div class="fill" id="scoreFill"></div></div>
+        <div class="sev-row">
+          <span class="sev-high"><b>${high}</b>high &minus;8</span>
+          <span class="sev-med"><b>${medium}</b>medium &minus;4</span>
+          <span class="sev-low"><b>${low}</b>low &minus;1</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="meta-list">
+          <div class="meta-row"><span class="k">repository</span><span class="v">${escapeHtml(owner)}/${escapeHtml(repo)}</span></div>
+          <div class="meta-row"><span class="k">files scanned</span><span class="v">${files}</span></div>
+          <div class="meta-row"><span class="k">findings</span><span class="v">${findings.length}</span></div>
+          <div class="meta-row"><span class="k">source</span><span class="v">${escapeHtml(source)} &middot; ${escapeHtml(branch)}</span></div>
+        </div>
+      </div>
+    </div>`;
+  animateScore(score);
+}
+
+function renderControls(result) {
+  if (!result.findings.length) { controls.innerHTML = ""; return; }
+  const counts = { all: result.findings.length, high: result.high, medium: result.medium, low: result.low };
+  const sevChips = ["all", "high", "medium", "low"]
+    .filter((key) => key === "all" || counts[key] > 0)
+    .map((key) => chip(key, key === "all" ? "all" : key, counts[key]))
+    .join("");
+  const catCounts = {};
+  for (const f of result.findings) catCounts[f.category] = (catCounts[f.category] || 0) + 1;
+  const catChips = Object.keys(catCounts)
+    .sort()
+    .map((cat) => chip(`cat:${cat}`, categoryLabels[cat] || cat, catCounts[cat]))
+    .join("");
+  controls.innerHTML = `
+    <div class="controls">
+      ${sevChips}<span style="width:1px;height:20px;background:var(--line-2);margin:0 4px;"></span>${catChips}
+      <span class="spacer"></span>
+      <button class="btn" id="copyMarkdownButton" type="button">Copy report &#8595; md</button>
+      <button class="btn" id="copyBadgeButton" type="button">Copy summary</button>
+    </div>`;
+  controls.querySelectorAll(".chip").forEach((el) => {
+    el.addEventListener("click", () => { activeFilter = el.dataset.filter; renderFindings(result); updateChipState(); });
+  });
+  document.getElementById("copyMarkdownButton").addEventListener("click", () => copyMarkdown(result).catch(() => setStatus("Copy did not complete. Select the report manually.")));
+  document.getElementById("copyBadgeButton").addEventListener("click", () => copyBadge(result).catch(() => setStatus("Copy did not complete. Select the summary manually.")));
+  updateChipState();
+}
+
+function chip(filter, label, count) {
+  return `<span class="chip" data-filter="${escapeHtml(filter)}">${escapeHtml(label)}<span class="n">${count}</span></span>`;
+}
+
+function updateChipState() {
+  controls.querySelectorAll(".chip").forEach((el) => {
+    el.classList.toggle("active", el.dataset.filter === activeFilter);
+  });
+}
+
+function filteredFindings(result) {
+  if (activeFilter === "all") return result.findings;
+  if (activeFilter.startsWith("cat:")) {
+    const cat = activeFilter.slice(4);
+    return result.findings.filter((f) => f.category === cat);
+  }
+  return result.findings.filter((f) => f.severity === activeFilter);
+}
+
+function renderFindings(result) {
+  if (!result.findings.length) {
+    findingsBox.innerHTML = `<div class="empty"><div class="big">&#10003; No findings from the browser rules.</div><p>This pass did not match configured slop patterns. Run the CLI for the deeper local rule set.</p></div>`;
+    return;
+  }
+  const items = filteredFindings(result);
+  if (!items.length) {
+    findingsBox.innerHTML = `<div class="empty"><p>No findings in this filter.</p></div>`;
+    return;
+  }
+  findingsBox.innerHTML = items.map((item, index) => `
+    <div class="finding sev-${item.severity}" style="animation-delay:${Math.min(index * 35, 420)}ms">
+      <div class="ftop">
+        <span class="badge ${item.severity}">${escapeHtml(item.severity)}</span>
+        <span class="label">${escapeHtml(item.label)}</span>
+        <span class="cat">${escapeHtml(categoryLabels[item.category] || item.category)}</span>
+      </div>
+      <div class="loc">${escapeHtml(item.file)}:${item.line}</div>
+      <code class="matched">${escapeHtml(item.matchedText)}</code>
+      <p class="why">${escapeHtml(item.reason)} <span class="fix"><b>Fix:</b> ${escapeHtml(item.fix)}</span></p>
+    </div>`).join("");
+}
+
+function buildMarkdown(result) {
+  const lines = [
+    `# DeSlop report - ${result.owner}/${result.repo}`,
+    "",
+    `Score: ${result.score}/100 (${verdictFor(result.score)})`,
+    `Files scanned: ${result.files} from ${result.source} (${result.branch})`,
+    `Findings: ${result.findings.length} - ${result.high} high, ${result.medium} medium, ${result.low} low`,
+    ""
+  ];
+  if (!result.findings.length) {
+    lines.push("No findings from the browser rules.");
+  } else {
+    for (const f of result.findings) {
+      lines.push(`- [${f.severity.toUpperCase()}] ${f.label} - \`${f.file}:${f.line}\``);
+      lines.push(`  - match: \`${f.matchedText}\``);
+      lines.push(`  - why: ${f.reason}`);
+      lines.push(`  - fix: ${f.fix}`);
+    }
+  }
+  lines.push("", "Scanned with DeSlop - https://deslop.imagineqira.com/");
+  return lines.join("\n");
+}
+
+async function copyMarkdown(result) {
+  await navigator.clipboard.writeText(buildMarkdown(result));
+  setStatus("Report copied as Markdown.");
+}
+
+async function copyBadge(result) {
+  const text = `DeSlop ${result.score}/100 - ${result.findings.length} findings (${result.high} high, ${result.medium} medium, ${result.low} low) on ${result.owner}/${result.repo} - https://deslop.imagineqira.com/`;
+  await navigator.clipboard.writeText(text);
+  setStatus("Result summary copied to clipboard.");
+}
+
 async function analyzeRepo() {
   analyzeButton.disabled = true;
   summary.innerHTML = "";
+  controls.innerHTML = "";
   findingsBox.innerHTML = "";
+  activeFilter = "all";
   try {
     const { owner, repo } = parseRepo(repoInput.value);
-    statusText.textContent = `Reading ${owner}/${repo} file list.`;
+    setStatus(`Reading ${owner}/${repo} file list.`);
     const { branch, source, candidates } = await getCandidates(owner, repo);
     const files = [];
     let skipped = 0;
     for (let index = 0; index < candidates.length; index += 1) {
       const item = candidates[index];
-      statusText.textContent = `Reading ${index + 1}/${candidates.length} from ${source}: ${item.path}`;
+      setStatus(`Reading ${index + 1}/${candidates.length} from ${source}: ${item.path}`);
       const text = await fetchFileText(owner, repo, item);
       if (typeof text === "string") files.push({ path: item.path, text });
       else skipped += 1;
     }
     const findings = files.flatMap(scanFile).slice(0, 200);
+    findings.sort((a, b) => weights[b.severity] - weights[a.severity] || a.file.localeCompare(b.file) || a.line - b.line);
     const high = findings.filter((item) => item.severity === "high").length;
     const medium = findings.filter((item) => item.severity === "medium").length;
     const low = findings.filter((item) => item.severity === "low").length;
     const score = Math.max(0, 100 - high * weights.high - medium * weights.medium - low * weights.low);
-    statusText.textContent = `Complete. Scanned ${files.length} files from ${owner}/${repo} (${source}, ${branch}). Skipped ${skipped}.`;
-    summary.innerHTML = `<div class="split"><div class="panel tight"><h2>Score ${score}/100</h2><p>${findings.length} findings. High ${high}, medium ${medium}, low ${low}.</p></div><div class="panel tight"><h2>Files ${files.length}</h2><p>Browser mode scanned public raw files under ${maxBytes} bytes. It falls back to jsDelivr when GitHub API is rate limited. Use the CLI for local, private, or very large repos.</p></div></div>`;
-    findingsBox.innerHTML = findings.length ? findings.map((item) => `<div class="result"><strong>${escapeHtml(item.severity.toUpperCase())} · ${escapeHtml(item.label)}</strong><br><code>${escapeHtml(item.file)}:${item.line}</code><br><span>${escapeHtml(item.matchedText)}</span><p>${escapeHtml(item.reason)} ${escapeHtml(item.fix)}</p></div>`).join("") : `<div class="result"><strong>No findings from browser rules.</strong><p>Use the CLI for the full local pass.</p></div>`;
+    lastResult = { owner, repo, branch, source, files: files.length, findings, high, medium, low, score };
+    setStatus(`Complete. Scanned ${files.length} files from ${owner}/${repo} (${source}, ${branch}). Skipped ${skipped}.`);
+    renderSummary(lastResult);
+    renderControls(lastResult);
+    renderFindings(lastResult);
   } catch (error) {
-    statusText.textContent = error instanceof Error ? error.message : "The browser audit stopped before completion.";
+    setStatus(error instanceof Error ? error.message : "The browser audit stopped before completion.");
   } finally {
     analyzeButton.disabled = false;
   }
@@ -202,8 +382,9 @@ async function copyCommand() {
   const { owner, repo } = parseRepo(repoInput.value);
   const command = `git clone https://github.com/${owner}/${repo}.git\ncd ${repo}\nnpx -y github:TheArtOfSound/DeSlop -- . --min-score 90`;
   await navigator.clipboard.writeText(command);
-  statusText.textContent = "CLI command copied.";
+  setStatus("CLI command copied.");
 }
 
 analyzeButton.addEventListener("click", analyzeRepo);
-copyCommandButton.addEventListener("click", () => copyCommand().catch((error) => { statusText.textContent = error instanceof Error ? error.message : "Copy did not complete."; }));
+copyCommandButton.addEventListener("click", () => copyCommand().catch((error) => { setStatus(error instanceof Error ? error.message : "Copy did not complete."); }));
+repoInput.addEventListener("keydown", (event) => { if (event.key === "Enter") analyzeRepo(); });

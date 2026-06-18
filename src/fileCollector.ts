@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { FileInput } from "./types";
 
-const ignoredDirNames = new Set([".git", "node_modules", "dist", "build", "coverage", ".next", ".turbo", ".cache"]);
+const ignoredDirNames = new Set([".git", "node_modules", "dist", "dist-page", "build", "coverage", ".next", ".turbo", ".cache"]);
 const scannedExtensions = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".jsx", ".json", ".html", ".css"]);
 
 export const defaultMaxFileBytes = 1_000_000;

@@ -28,7 +28,7 @@
     "clean": "rm -rf dist dist-page",
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
-    "check": "npm run clean && npm run build && node --test \"dist/**/*.test.js\"",
+    "check": "npm run clean && npm run build && node --test dist/*.test.js",
     "audit": "npm run build && node dist/cli.js",
     "build:page": "node scripts/build-public-page.mjs",
     "verify:page": "node scripts/verify-public-page.mjs .",
